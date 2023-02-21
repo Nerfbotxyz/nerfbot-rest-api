@@ -1,7 +1,7 @@
 import { Server } from 'http'
 import Koa from 'koa'
 import Router from '@koa/router'
-import { AuthRouter } from './interface/router/auth'
+import { AuthRouter, NerfRouter } from './interface/router'
 
 export type State = Koa.DefaultState & {
   // auth?: AuthState
@@ -32,7 +32,8 @@ export default class NerfbotRestApi {
     })
 
     const routers = [
-      { path: '/auth', router: new AuthRouter().router }
+      { path: '/auth', router: new AuthRouter().router },
+      { path: '/nerf', router: new NerfRouter().router },
     ]
 
     for (let i = 0; i < routers.length; i++) {
@@ -46,7 +47,6 @@ export default class NerfbotRestApi {
     this.app
       .use(async (ctx, next) => {
         ctx.set('Access-Control-Allow-Origin', '*')
-
         await next()
       })
       .use(router.routes())
