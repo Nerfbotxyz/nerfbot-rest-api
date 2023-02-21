@@ -1,7 +1,10 @@
+import 'dotenv/config'
 import { Server } from 'http'
 import Koa from 'koa'
 import Router from '@koa/router'
 import { AuthRouter, NerfRouter } from './interface/router'
+import { PostgresAdapter } from './infra/db/adapter'
+import { ApiKeyRepository, UserRepository } from './service/repository'
 
 export type State = Koa.DefaultState & {
   // auth?: AuthState
@@ -22,7 +25,31 @@ export default class NerfbotRestApi {
     this.build()
   }
 
+  private setupDatabase(): PostgresAdapter {
+    const user = process.env.DB_USER || 'DB_USER not set!'
+    const pass = process.env.DB_PASS || 'DB_PASS not set!'
+    const host = process.env.DB_HOST || 'DB_HOST not set!'
+    const port = process.env.DB_PORT || 'DB_PORT not set!'
+    const name = process.env.DB_NAME || 'postgres'
+    const connection = `postgresql://${user}:${pass}@${host}:${port}/${name}`
+
+    return new PostgresAdapter(connection)
+  }
+
+  private setupServices(db: PostgresAdapter): {
+    'users': UserRepository,
+    'apiKeys': ApiKeyRepository
+  } {
+    return {
+      'users': new UserRepository(db),
+      'apiKeys': new ApiKeyRepository(db)
+    }
+  }
+
   private build() {
+    const db = this.setupDatabase()
+    const { users, apiKeys } = this.setupServices(db)
+
     const router = new Router()
 
     router.get('/healthcheck', (ctx) => {
@@ -31,16 +58,17 @@ export default class NerfbotRestApi {
       return
     })
 
-    const routers = [
+    const childRouters = [
       { path: '/auth', router: new AuthRouter().router },
-      { path: '/nerf', router: new NerfRouter().router },
+      { path: '/nerf', router: new NerfRouter(apiKeys).router },
     ]
 
-    for (let i = 0; i < routers.length; i++) {
+    for (let i = 0; i < childRouters.length; i++) {
+      const childRouter = childRouters[i]
       router.use(
-        routers[i].path,
-        routers[i].router.routes(),
-        routers[i].router.allowedMethods()
+        childRouter.path,
+        childRouter.router.routes(),
+        childRouter.router.allowedMethods()
       )
     }
 

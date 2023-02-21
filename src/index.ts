@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import NerfbotRestApi from './app'
 
 ;(async () => {
