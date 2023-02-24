@@ -4,10 +4,18 @@ import Koa from 'koa'
 import Router from '@koa/router'
 import { AuthRouter, NerfRouter } from './interface/router'
 import { PostgresAdapter } from './infra/db/adapter'
-import { ApiKeyRepository, UserRepository } from './service/repository'
+import {
+  ApiKeyRepository,
+  UploadsRepository,
+  UserRepository
+} from './service/repository'
+import { S3Adapter } from './infra/bucket/adapter'
+import { UploadsBucket } from './service/bucket'
+import { UploadsApplicationService } from './app-services'
+import { AuthState } from './interface/middleware'
 
 export type State = Koa.DefaultState & {
-  // auth?: AuthState
+  auth?: AuthState
 }
 export type Context = Koa.DefaultContext & {}
 export type ParameterizedContext = Koa.ParameterizedContext<
@@ -25,7 +33,7 @@ export default class NerfbotRestApi {
     this.build()
   }
 
-  private setupDatabase(): PostgresAdapter {
+  private setupDatabaseAdapter(): PostgresAdapter {
     const user = process.env.DB_USER || 'DB_USER not set!'
     const pass = process.env.DB_PASS || 'DB_PASS not set!'
     const host = process.env.DB_HOST || 'DB_HOST not set!'
@@ -36,22 +44,49 @@ export default class NerfbotRestApi {
     return new PostgresAdapter(connection)
   }
 
-  private setupServices(db: PostgresAdapter): {
-    'users': UserRepository,
-    'apiKeys': ApiKeyRepository
-  } {
+  private setupBucketAdapter(): S3Adapter {
+    return new S3Adapter()
+  }
+
+  private setupServices(db: PostgresAdapter, bucketAdapter: S3Adapter) {
+    const bucket = process.env.BUCKET_NAME || 'BUCKET_NAME not set!'
+
     return {
-      'users': new UserRepository(db),
-      'apiKeys': new ApiKeyRepository(db)
+      usersRepository: new UserRepository(db),
+      apiKeys: new ApiKeyRepository(db),
+      uploadsBucket: new UploadsBucket(bucketAdapter, bucket),
+      uploadsRepository: new UploadsRepository(db)
+    }
+  }
+
+  private setupApplicationServices(
+    uploadsBucket: UploadsBucket,
+    uploadsRepository: UploadsRepository
+  ) {
+    return {
+      uploadsAppService: new UploadsApplicationService(
+        uploadsBucket,
+        uploadsRepository
+      )
     }
   }
 
   private build() {
-    const db = this.setupDatabase()
-    const { users, apiKeys } = this.setupServices(db)
+    const dbAdapter = this.setupDatabaseAdapter()
+    const bucketAdapter = this.setupBucketAdapter()
+
+    const {
+      apiKeys,
+      uploadsBucket,
+      uploadsRepository,
+      usersRepository
+    } = this.setupServices(dbAdapter, bucketAdapter)
+
+    const {
+      uploadsAppService
+    } = this.setupApplicationServices(uploadsBucket, uploadsRepository)
 
     const router = new Router()
-
     router.get('/healthcheck', (ctx) => {
       ctx.body = { health: 'ok' }
 
@@ -60,7 +95,10 @@ export default class NerfbotRestApi {
 
     const childRouters = [
       { path: '/auth', router: new AuthRouter().router },
-      { path: '/nerf', router: new NerfRouter(apiKeys).router },
+      {
+        path: '/nerf',
+        router: new NerfRouter(apiKeys, uploadsAppService).router
+      },
     ]
 
     for (let i = 0; i < childRouters.length; i++) {

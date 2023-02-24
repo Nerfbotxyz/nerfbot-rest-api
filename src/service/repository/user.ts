@@ -1,5 +1,5 @@
-import { PostgresAdapter } from '../../infra/db/adapter'
+import BaseRepository from './base'
 
-export default class UserRepository {
-  constructor(private db: PostgresAdapter) {}
+export default class UserRepository extends BaseRepository {
+  protected tableName: string = 'users'
 }

@@ -1,19 +1,16 @@
-import { PostgresAdapter } from '../../infra/db/adapter'
+import BaseRepository from './base'
 
-const schema = 'nerfbot'
+export interface ApiKey {
+  apiKey: string
+  userId: number
+}
 
-export default class ApiKeyRepository {
-  private get table() {
-    return this.db.client.withSchema(schema).table('apiKeys')
-  }
+export default class ApiKeyRepository extends BaseRepository {
+  protected tableName: string = 'apiKeys'
 
-  constructor(private db: PostgresAdapter) {}
-
-  async find(column: string, value: string) {
-    return await this.table.select().where(column, value)
-  }
-
-  async list() {
-    return await this.table.select()
+  async first(column: string, value: string) {
+    return await this.table
+      .where(column, value)
+      .first<ApiKey | undefined>() || null
   }
 }

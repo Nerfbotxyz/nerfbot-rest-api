@@ -1,5 +1,5 @@
 import { ParameterizedContext } from '../../app'
-import { ApiKeyRepository } from '../../service/repository'
+import { ApiKeyRepository, UserRepository } from '../../service/repository'
 
 export default (apiKeys: ApiKeyRepository) => async (
   ctx: ParameterizedContext,
@@ -9,10 +9,15 @@ export default (apiKeys: ApiKeyRepository) => async (
     ? ctx.query.token[0]
     : ctx.query.token
 
-  const validTokens = (await apiKeys.list()).map(key => key.apiKey)
+  if (token) {
+    const apiKey = await apiKeys.first('apiKey', token)
+    if (apiKey) {
+      const { userId } = apiKey
+      ctx.state.auth = { userId, apiKey: token }
+      await next()
+    }
 
-  if (token && validTokens.includes(token)) {
-    await next()
+    ctx.status = 401
   } else {
     ctx.status = 401
   }
