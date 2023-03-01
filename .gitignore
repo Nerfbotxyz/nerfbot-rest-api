@@ -11,3 +11,4 @@ oclif.manifest.json
 *.env
 logs
 /.db
+/seeds

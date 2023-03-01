@@ -15,3 +15,6 @@ $ npm run build
 ```bash
 $ npm start
 ```
+
+## REST API
+

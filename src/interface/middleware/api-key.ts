@@ -15,9 +15,9 @@ export default (apiKeys: ApiKeyRepository) => async (
       const { userId } = apiKey
       ctx.state.auth = { userId, apiKey: token }
       await next()
+    } else {
+      ctx.status = 401
     }
-
-    ctx.status = 401
   } else {
     ctx.status = 401
   }

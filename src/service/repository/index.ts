@@ -1,3 +1,8 @@
 export { default as ApiKeyRepository } from './apiKey'
+export * from './apiKey'
+export { default as ProcessRequestRepository } from './processRequests'
+export * from './processRequests'
 export { default as UploadsRepository } from './uploads'
+export * from './uploads'
 export { default as UserRepository } from './user'
+export * from './user'

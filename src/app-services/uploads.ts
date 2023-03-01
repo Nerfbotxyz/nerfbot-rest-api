@@ -2,7 +2,7 @@ import { IncomingMessage } from 'http'
 import { v4 as uuidv4 } from 'uuid'
 
 import { UploadsBucket } from '../service/bucket'
-import { UploadsRepository } from '../service/repository'
+import { Upload, UploadsRepository } from '../service/repository'
 
 export default class UploadsApplicationService {
   constructor(
@@ -15,11 +15,15 @@ export default class UploadsApplicationService {
     apiKey: string,
     req: IncomingMessage
   ): Promise<string> {
-    const id = uuidv4()
+    const uploadId = uuidv4()
 
-    await this.uploadsBucket.upload(id, req)
-    await this.uploadsRepository.create(userId, apiKey, id)
+    await this.uploadsBucket.upload(uploadId, req)
+    await this.uploadsRepository.create({ userId, apiKey, uploadId })
 
-    return id
+    return uploadId
+  }
+
+  async getUploadsForApiKey(apiKey: string): Promise<Upload[]> {
+    return await this.uploadsRepository.list('apiKey', apiKey)
   }
 }

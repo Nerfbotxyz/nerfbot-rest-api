@@ -6,6 +6,7 @@ const pass = process.env.DB_PASS || 'DB_PASS not set!'
 const host = process.env.DB_HOST || 'DB_HOST not set!'
 const port = process.env.DB_PORT || 'DB_PORT not set!'
 const name = process.env.DB_NAME || 'postgres'
+export const SCHEMA_NAME = process.env.DB_SCHEMA || 'nerfbot'
 
 const config: { [key: string]: Knex.Config } = {
   development: {
@@ -44,7 +45,12 @@ const config: { [key: string]: Knex.Config } = {
       tableName: "knex_migrations"
     }
   }
+}
 
-};
+export const onUpdateTrigger = (tableName: string) => `
+  CREATE TRIGGER ${tableName}_updated_at
+  BEFORE UPDATE ON ${SCHEMA_NAME}.${tableName}
+  FOR EACH ROW EXECUTE PROCEDURE on_update_timestamp();
+`
 
-module.exports = config;
+export default config

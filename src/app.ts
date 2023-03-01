@@ -6,12 +6,13 @@ import { AuthRouter, NerfRouter } from './interface/router'
 import { PostgresAdapter } from './infra/db/adapter'
 import {
   ApiKeyRepository,
+  ProcessRequestRepository,
   UploadsRepository,
   UserRepository
 } from './service/repository'
 import { S3Adapter } from './infra/bucket/adapter'
 import { UploadsBucket } from './service/bucket'
-import { UploadsApplicationService } from './app-services'
+import { ProcessRequestsApplicationService, UploadsApplicationService } from './app-services'
 import { AuthState } from './interface/middleware'
 
 export type State = Koa.DefaultState & {
@@ -55,18 +56,23 @@ export default class NerfbotRestApi {
       usersRepository: new UserRepository(db),
       apiKeys: new ApiKeyRepository(db),
       uploadsBucket: new UploadsBucket(bucketAdapter, bucket),
-      uploadsRepository: new UploadsRepository(db)
+      uploadsRepository: new UploadsRepository(db),
+      processRequestsRepository: new ProcessRequestRepository(db)
     }
   }
 
   private setupApplicationServices(
     uploadsBucket: UploadsBucket,
-    uploadsRepository: UploadsRepository
+    uploadsRepository: UploadsRepository,
+    processRequestsRepository: ProcessRequestRepository
   ) {
     return {
       uploadsAppService: new UploadsApplicationService(
         uploadsBucket,
         uploadsRepository
+      ),
+      processRequestsAppService: new ProcessRequestsApplicationService(
+        processRequestsRepository
       )
     }
   }
@@ -79,12 +85,18 @@ export default class NerfbotRestApi {
       apiKeys,
       uploadsBucket,
       uploadsRepository,
-      usersRepository
+      usersRepository,
+      processRequestsRepository
     } = this.setupServices(dbAdapter, bucketAdapter)
 
     const {
-      uploadsAppService
-    } = this.setupApplicationServices(uploadsBucket, uploadsRepository)
+      uploadsAppService,
+      processRequestsAppService
+    } = this.setupApplicationServices(
+      uploadsBucket,
+      uploadsRepository,
+      processRequestsRepository
+    )
 
     const router = new Router()
     router.get('/healthcheck', (ctx) => {
@@ -97,7 +109,11 @@ export default class NerfbotRestApi {
       { path: '/auth', router: new AuthRouter().router },
       {
         path: '/nerf',
-        router: new NerfRouter(apiKeys, uploadsAppService).router
+        router: new NerfRouter(
+          apiKeys,
+          uploadsAppService,
+          processRequestsAppService
+        ).router
       },
     ]
 

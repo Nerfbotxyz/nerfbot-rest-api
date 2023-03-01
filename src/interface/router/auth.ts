@@ -14,7 +14,8 @@ export class AuthRouter {
   }
 
   private async createToken(ctx: ParameterizedContext) {
-    ctx.body = { key: 'this-is-a-test-api-key' }
+    // ctx.body = { key: 'this-is-a-test-api-key' }
+    ctx.status = 401
 
     return
   }
