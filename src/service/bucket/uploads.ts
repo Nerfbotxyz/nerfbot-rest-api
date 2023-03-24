@@ -10,7 +10,7 @@ export default class UploadsBucketService {
     return new Promise<string>(async (resolve, reject) => {
       const bus = busboy({
         headers: req.headers,
-        limits: { fileSize: 5e6 } // 5mb
+        limits: { fileSize: 5e6 } // 5mb TODO -> configurable
       })
 
       bus.on('file', async (name, stream, { filename, mimeType }) => {
@@ -21,10 +21,12 @@ export default class UploadsBucketService {
           ContentType: mimeType
         })
       })
+
       bus.once('close', () => {
         bus.removeAllListeners()
         resolve(id)
       })
+
       bus.once('error', (error) => {
         bus.removeAllListeners()
         reject(error)

@@ -11,20 +11,17 @@ export default class BaseRepository<T extends {}> {
 
   constructor(protected db: PostgresAdapter) {}
 
-  async list(
-    column?: string,
-    value?: string | number
-  ): Promise<T[]> {
+  async list(thing?: Partial<T>): Promise<T[]> {
     let query = this.table
 
-    if (column) {
-      query = query.where(column, value)
+    if (thing) {
+      query = query.where(thing)
     }
 
     return await query.select<T>()
   }
 
-  async first(column: string, value: any): Promise<T | null> {
-    return await this.table.where(column, value).first<T | undefined>() || null
+  async first(thing: Partial<T>): Promise<T | null> {
+    return await this.table.where(thing).first<T | undefined>() || null
   }
 }

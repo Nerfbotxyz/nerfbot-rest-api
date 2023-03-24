@@ -1,2 +1,2 @@
 export { default as UploadsApplicationService } from './uploads'
-export { default as ProcessRequestsApplicationService } from './processRequests'
+export { default as ProcessRequestsAppService } from './processRequests'
