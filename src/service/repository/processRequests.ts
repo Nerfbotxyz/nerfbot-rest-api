@@ -16,7 +16,7 @@ type OmitProcessRequestProps =
   | 'updated_at'
 export type CreateProcessRequest = Omit<ProcessRequest, OmitProcessRequestProps>
 
-export default class ProcessRequestRepository
+export default class ProcessRequestsRepository
   extends BaseRepository<ProcessRequest>
 {
   protected tableName: string = 'process_requests'

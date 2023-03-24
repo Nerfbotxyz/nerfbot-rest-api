@@ -5,14 +5,14 @@ import Router from '@koa/router'
 import { AuthRouter, NerfRouter } from './interface/router'
 import { PostgresAdapter } from './infra/db/adapter'
 import {
-  ApiKeyRepository,
-  ProcessRequestRepository,
+  ApiKeysRepository,
+  ProcessRequestsRepository,
   UploadsRepository,
-  UserRepository
+  UsersRepository
 } from './service/repository'
 import { S3Adapter } from './infra/bucket/adapter'
 import { UploadsBucket } from './service/bucket'
-import { ProcessRequestsApplicationService, UploadsApplicationService } from './app-services'
+import { ProcessRequestsAppService, UploadsApplicationService } from './app-services'
 import { AuthState } from './interface/middleware'
 
 export type State = Koa.DefaultState & {
@@ -53,25 +53,25 @@ export default class NerfbotRestApi {
     const bucket = process.env.BUCKET_NAME || 'BUCKET_NAME not set!'
 
     return {
-      usersRepository: new UserRepository(db),
-      apiKeys: new ApiKeyRepository(db),
+      usersRepository: new UsersRepository(db),
+      apiKeys: new ApiKeysRepository(db),
       uploadsBucket: new UploadsBucket(bucketAdapter, bucket),
       uploadsRepository: new UploadsRepository(db),
-      processRequestsRepository: new ProcessRequestRepository(db)
+      processRequestsRepository: new ProcessRequestsRepository(db)
     }
   }
 
   private setupApplicationServices(
     uploadsBucket: UploadsBucket,
     uploadsRepository: UploadsRepository,
-    processRequestsRepository: ProcessRequestRepository
+    processRequestsRepository: ProcessRequestsRepository
   ) {
     return {
       uploadsAppService: new UploadsApplicationService(
         uploadsBucket,
         uploadsRepository
       ),
-      processRequestsAppService: new ProcessRequestsApplicationService(
+      processRequestsAppService: new ProcessRequestsAppService(
         processRequestsRepository
       )
     }

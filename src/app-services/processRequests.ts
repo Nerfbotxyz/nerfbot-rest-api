@@ -1,20 +1,23 @@
-import { ProcessRequestRepository } from '../service/repository'
+import { ProcessRequestsRepository } from '../service/repository'
 
-export default class ProcessRequestsApplicationService {
+export default class ProcessRequestsAppService {
   constructor(
-    private processRequestsRepository: ProcessRequestRepository
+    private processRequests: ProcessRequestsRepository
   ) {}
 
   async create(userId: number, apiKey: string, uploadId: string) {
-    return await this.processRequestsRepository.create({
+    return await this.processRequests.create({
       userId,
       apiKey,
       uploadId
     })
   }
 
-  async get(processRequestId: string) {
-    return await this.processRequestsRepository
-      .first('processRequestId', processRequestId)
+  async get(apiKey: string, processRequestId: string) {
+    return await this.processRequests.first({ apiKey, processRequestId })
+  }
+
+  async list(apiKey: string) {
+    return await this.processRequests.list({ apiKey })
   }
 }

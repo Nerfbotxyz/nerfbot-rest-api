@@ -5,6 +5,6 @@ export interface User {
   username: string
 }
 
-export default class UserRepository extends BaseRepository<User> {
+export default class UsersRepository extends BaseRepository<User> {
   protected tableName: string = 'users'
 }
