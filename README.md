@@ -4,6 +4,7 @@ REST API supporting the NERFBot stack.  Accepts requests for image/video uploads
 
 ## Requirements
 - `node` >= `v16 LTS`
+- `postgres` >= `14 LTS`
 
 ## Install
 ```bash
