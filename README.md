@@ -58,8 +58,8 @@ This may change to an `Authorization` header in the future.
 More endpoints will be added as functionality is developed.
 
 - `GET` `/healthcheck` - API Healthcheck, returns `200 OK`
-- POST `/nerf/uploads` - Post a new upload request, one or many files, as form data
-- GET `/nerf/uploads` - List your upload requests
-- POST `/nerf/uploads/:uploadId/process` - Post a new process request to prep an upload for training
-- GET `/nerf/process-requests` - List your process requests (with statuses)
-- GET `/nerf/process-request/:processRequestId` - Get a process request by ID (with status)
+- `POST` `/nerf/uploads` - Post a new upload request, one or many files, as form data
+- `GET` `/nerf/uploads` - List your upload requests
+- `POST` `/nerf/uploads/:uploadId/process` - Post a new process request to prep an upload for training
+- `GET` `/nerf/process-requests` - List your process requests (with statuses)
+- `GET` `/nerf/process-request/:processRequestId` - Get a process request by ID (with status)
