@@ -3,7 +3,7 @@
 REST API supporting the NERFBot stack.  Accepts requests for image/video uploads, processing requests of those uploads to prepare for training, training requests, and export requests.
 
 ## Requirements
-- `node` `v16.13.2`
+- `node` >= `v16 LTS`
 
 ## Install
 ```bash
