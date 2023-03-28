@@ -26,6 +26,7 @@ export class NerfRouter {
     this.router.use(requireApiToken(this.apiKeys))
     this.router.post('/uploads', this.upload.bind(this))
     this.router.get('/uploads', this.listUploads.bind(this))
+    this.router.get('/uploads/:uploadId', this.getUpload.bind(this))
     this.router.post('/uploads/:uploadId/process', this.process.bind(this))
     this.router.get('/process-requests', this.listProcessRequests.bind(this))
     this.router.get(
@@ -70,9 +71,28 @@ export class NerfRouter {
     }
   }
 
+  private async getUpload(ctx: ParameterizedContext) {
+    try {
+      const upload = await this.uploadsAppService.get(
+        ctx.state.auth!.apiKey,
+        ctx.params.uploadId
+      )
+
+      ctx.status = 200
+      ctx.body = { upload }
+
+      return
+    } catch (error) {
+      console.error('[NerfRouter][GET][getUpload]', error)
+      ctx.status = 500
+
+      return
+    }
+  }
+
   private async listUploads(ctx: ParameterizedContext) {
     try {
-      const uploads = await this.uploadsAppService.listUploadsForApiKey(
+      const uploads = await this.uploadsAppService.list(
         ctx.state.auth!.apiKey
       )
 
@@ -81,7 +101,7 @@ export class NerfRouter {
 
       return
     } catch (error) {
-      console.error('[NerfRouter][GET][uploads]', error)
+      console.error('[NerfRouter][GET][listUploads]', error)
       ctx.status = 500
 
       return

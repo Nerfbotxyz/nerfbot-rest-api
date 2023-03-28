@@ -23,7 +23,11 @@ export default class UploadsApplicationService {
     return uploadId
   }
 
-  async listUploadsForApiKey(apiKey: string): Promise<Upload[]> {
+  async list(apiKey: string): Promise<Upload[]> {
     return await this.uploadsRepository.list({ apiKey })
+  }
+
+  async get(apiKey: string, uploadId: string): Promise<Upload | null> {
+    return await this.uploadsRepository.first({ apiKey, uploadId })
   }
 }
