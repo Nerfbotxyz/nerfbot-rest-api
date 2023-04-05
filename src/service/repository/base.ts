@@ -1,6 +1,6 @@
 import { inject, injectable } from 'inversify'
 
-import { PostgresAdapter } from '../../infra/db/adapter'
+import { PostgresAdapter } from '~/infra/db/adapter'
 import { IRepository } from './'
 
 const schema = 'nerfbot'

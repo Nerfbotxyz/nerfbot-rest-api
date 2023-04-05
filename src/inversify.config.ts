@@ -25,7 +25,12 @@ import {
   UsersRepository
 } from './service/repository'
 import { ProcessRequest } from './core'
-import { APP_SERVICES, IAppService, ProcessRequestsAppService, UploadsAppService } from './app-services'
+import {
+  APP_SERVICES,
+  IAppService,
+  ProcessRequestsAppService,
+  UploadsAppService
+} from './app-services'
 import { BUCKETS, IBucketService, UploadsBucket } from './service/bucket'
 import { IQueueService, ProcessQueue, QUEUES } from './service/queue'
 

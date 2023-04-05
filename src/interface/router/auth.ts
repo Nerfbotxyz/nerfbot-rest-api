@@ -1,7 +1,7 @@
 import Router from '@koa/router'
 import { injectable } from 'inversify'
 
-import { Context, ParameterizedContext, State } from '../../app'
+import { Context, ParameterizedContext, State } from '~/app'
 
 @injectable()
 export class AuthRouter {

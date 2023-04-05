@@ -7,6 +7,12 @@ import NerfbotRestApi from './app'
 
   app.start()
 
-  process.on('SIGINT', () => { app.stop() })
-  process.on('SIGTERM', () => { app.stop() })
+  process.on('SIGINT', async () => {
+    await app.stop()
+    process.exit(0)
+  })
+  process.on('SIGTERM', async () => {
+    await app.stop()
+    process.exit(0)
+  })
 })()

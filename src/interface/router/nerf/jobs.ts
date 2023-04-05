@@ -1,7 +1,7 @@
 import Router from '@koa/router'
 import { inject, injectable } from 'inversify'
 
-import { State, Context, ParameterizedContext } from '../../../app'
+import { State, Context, ParameterizedContext } from '~/app'
 import { IRouter } from '../'
 
 @injectable()
@@ -13,11 +13,11 @@ export default class NerfJobsRouter implements IRouter<State, Context> {
   }
 
   private build() {
-    this.router.get('/', this.listProcessRequests.bind(this))
-    this.router.get('/:jobId', this.getProcessRequest.bind(this))
+    this.router.get('/', this.listJobs.bind(this))
+    this.router.get('/:jobId', this.getJob.bind(this))
   }
 
-  private async listProcessRequests(ctx: ParameterizedContext) {
+  private async listJobs(ctx: ParameterizedContext) {
     // try {
     //   const processRequests = await this.processRequestsAppService.list(
     //     ctx.state.auth!.apiKey
@@ -33,7 +33,7 @@ export default class NerfJobsRouter implements IRouter<State, Context> {
     // }
   }
 
-  private async getProcessRequest(ctx: ParameterizedContext) {
+  private async getJob(ctx: ParameterizedContext) {
     // try {
     //   const processRequest = await this.processRequestsAppService.get(
     //     ctx.state.auth!.apiKey,

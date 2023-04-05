@@ -1,5 +1,5 @@
-import { ParameterizedContext } from '../../app'
-import { ApiKeysRepository, UsersRepository } from '../../service/repository'
+import { ParameterizedContext } from '~/app'
+import { ApiKeysRepository, UsersRepository } from '~/service/repository'
 
 export default (apiKeys: ApiKeysRepository) => async (
   ctx: ParameterizedContext,

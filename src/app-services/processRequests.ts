@@ -1,6 +1,6 @@
 import { inject, injectable } from 'inversify'
-import { ProcessQueue, QUEUES } from '../service/queue'
-import { ProcessRequestsRepository } from '../service/repository'
+import { ProcessQueue, QUEUES } from '~/service/queue'
+import { ProcessRequestsRepository } from '~/service/repository'
 
 @injectable()
 export default class ProcessRequestsAppService {
@@ -9,7 +9,7 @@ export default class ProcessRequestsAppService {
   ) {}
 
   async create(userId: number, apiKey: string, uploadId: string) {
-    // TODO
+    // TODO -> instead, create job in postgres then add to queue and return
     const job = await this.processQueue.add({ userId, apiKey, uploadId })
 
     const jobJSON = job.toJSON()

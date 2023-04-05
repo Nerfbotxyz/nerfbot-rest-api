@@ -1,12 +1,12 @@
 import Router from '@koa/router'
 import { inject, injectable } from 'inversify'
 
-import { Context, ParameterizedContext, State } from '../../../app'
+import { Context, ParameterizedContext, State } from '~/app'
 import {
   APP_SERVICES,
   ProcessRequestsAppService,
   UploadsAppService
-} from '../../../app-services'
+} from '~/app-services'
 
 const MAX_UPLOAD_SIZE_BYTES = 5000000 // 5mb
 

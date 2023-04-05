@@ -1,9 +1,9 @@
 import Router from '@koa/router'
 import { inject, injectable } from 'inversify'
 
-import { Context, State } from '../../../app'
-import { ApiKeysRepository, REPOSITORIES } from '../../../service/repository'
-import { requireApiToken } from '../../middleware'
+import { Context, State } from '~/app'
+import { ApiKeysRepository, REPOSITORIES } from '~/service/repository'
+import { requireApiToken } from '~/interface/middleware'
 import NerfUploadsRouter from './uploads'
 import NerfJobsRouter from './jobs'
 import { ROUTERS } from '../'

@@ -1,6 +1,6 @@
 import { injectable } from 'inversify'
 
-import { ProcessRequest } from '../../core'
+import { ProcessRequest } from '~/core'
 import BaseRepository from './base'
 
 @injectable()

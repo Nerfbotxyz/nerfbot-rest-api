@@ -4,23 +4,8 @@ import Koa from 'koa'
 import Router from '@koa/router'
 import { createClient } from 'redis'
 
-import { AuthRouter, IRouter, NerfRouter, ROUTERS } from './interface/router'
-import { PostgresAdapter } from './infra/db/adapter'
-import {
-  ApiKeysRepository,
-  ProcessRequestsRepository,
-  UploadsRepository,
-  UsersRepository
-} from './service/repository'
-import { S3Adapter } from './infra/bucket/adapter'
-import { UploadsBucket } from './service/bucket'
-import {
-  ProcessRequestsAppService,
-  UploadsAppService
-} from './app-services'
+import { IRouter, ROUTERS } from './interface/router'
 import { AuthState } from './interface/middleware'
-import { BullAdapter } from './infra/queue/adapter'
-import { ProcessQueue } from './service/queue'
 import { buildContainer, config } from './inversify.config'
 
 export type State = Koa.DefaultState & {
@@ -85,6 +70,7 @@ export default class NerfbotRestApi {
     try {
       const redisClient = createClient(config.redis)
       await redisClient.connect()
+      await redisClient.disconnect()
     } catch (error) {
       console.error('Redis connection failed, see error below')
 
@@ -101,9 +87,12 @@ export default class NerfbotRestApi {
     }
   }
 
-  stop() {
+  async stop() {
     if (this.server) {
-      this.server.close(() => console.log('Nerfbot REST API stopped'))
+      return new Promise<void>(resolve => {
+        this.server.close(() => console.log('Nerfbot REST API stopped'))
+        resolve()
+      })
     }
   }
 }

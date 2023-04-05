@@ -1,8 +1,8 @@
 import { Queue } from 'bull'
 import { inject, injectable } from 'inversify'
 
-import { ProcessRequest } from '../../core'
-import { BullAdapter } from '../../infra/queue/adapter'
+import { ProcessRequest } from '~/core'
+import { BullAdapter } from '~/infra/queue/adapter'
 
 @injectable()
 export default class ProcessQueue {

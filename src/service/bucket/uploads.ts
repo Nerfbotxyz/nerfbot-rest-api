@@ -2,8 +2,8 @@ import { IncomingMessage } from 'http'
 import busboy from 'busboy'
 import { inject, injectable } from 'inversify'
 
-import { S3Adapter } from '../../infra/bucket/adapter'
-import { AppConfig } from '../../inversify.config'
+import { S3Adapter } from '~/infra/bucket/adapter'
+import { AppConfig } from '~/inversify.config'
 import { IBucketService } from './'
 
 @injectable()

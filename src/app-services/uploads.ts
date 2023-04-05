@@ -2,8 +2,8 @@ import { IncomingMessage } from 'http'
 import { v4 as uuidv4 } from 'uuid'
 import { inject, injectable } from 'inversify'
 
-import { BUCKETS, UploadsBucket } from '../service/bucket'
-import { REPOSITORIES, Upload, UploadsRepository } from '../service/repository'
+import { BUCKETS, UploadsBucket } from '~/service/bucket'
+import { REPOSITORIES, Upload, UploadsRepository } from '~/service/repository'
 import { IAppService } from './'
 
 @injectable()
