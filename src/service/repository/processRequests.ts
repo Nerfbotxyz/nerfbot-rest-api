@@ -1,28 +1,16 @@
+import { injectable } from 'inversify'
+
+import { ProcessRequest } from '../../core'
 import BaseRepository from './base'
 
-export interface ProcessRequest {
-  processRequestId: string
-  userId: number
-  apiKey: string
-  uploadId: string
-  status: 'WAITING' | 'PROCESSING' | 'ERROR' | 'COMPLETE'
-  created_at: Date
-  updated_at: Date
-}
-type OmitProcessRequestProps =
-  | 'processRequestId'
-  | 'status'
-  | 'created_at'
-  | 'updated_at'
-export type CreateProcessRequest = Omit<ProcessRequest, OmitProcessRequestProps>
-
+@injectable()
 export default class ProcessRequestsRepository
   extends BaseRepository<ProcessRequest>
 {
-  protected tableName: string = 'process_requests'
+  tableName: string = 'process_requests'
 
   async create(
-    createProcessRequest: CreateProcessRequest
+    createProcessRequest: ProcessRequest
   ): Promise<ProcessRequest> {
     const [ newProcessRequest ] = await this.table
       .insert(createProcessRequest)

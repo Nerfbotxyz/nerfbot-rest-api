@@ -1,3 +1,5 @@
+import { injectable } from 'inversify'
+
 import BaseRepository from './base'
 
 export interface ApiKey {
@@ -6,6 +8,7 @@ export interface ApiKey {
   userId: number
 }
 
+@injectable()
 export default class ApiKeysRepository extends BaseRepository<ApiKey> {
-  protected tableName: string = 'api_keys'
+  tableName: string = 'api_keys'
 }

@@ -2,7 +2,9 @@ import 'dotenv/config'
 import { Server } from 'http'
 import Koa from 'koa'
 import Router from '@koa/router'
-import { AuthRouter, NerfRouter } from './interface/router'
+import { createClient } from 'redis'
+
+import { AuthRouter, IRouter, NerfRouter, ROUTERS } from './interface/router'
 import { PostgresAdapter } from './infra/db/adapter'
 import {
   ApiKeysRepository,
@@ -12,8 +14,14 @@ import {
 } from './service/repository'
 import { S3Adapter } from './infra/bucket/adapter'
 import { UploadsBucket } from './service/bucket'
-import { ProcessRequestsAppService, UploadsApplicationService } from './app-services'
+import {
+  ProcessRequestsAppService,
+  UploadsAppService
+} from './app-services'
 import { AuthState } from './interface/middleware'
+import { BullAdapter } from './infra/queue/adapter'
+import { ProcessQueue } from './service/queue'
+import { buildContainer, config } from './inversify.config'
 
 export type State = Koa.DefaultState & {
   auth?: AuthState
@@ -34,96 +42,26 @@ export default class NerfbotRestApi {
     this.build()
   }
 
-  private setupDatabaseAdapter(): PostgresAdapter {
-    const user = process.env.DB_USER || 'DB_USER not set!'
-    const pass = process.env.DB_PASS || 'DB_PASS not set!'
-    const host = process.env.DB_HOST || 'DB_HOST not set!'
-    const port = process.env.DB_PORT || 'DB_PORT not set!'
-    const name = process.env.DB_NAME || 'postgres'
-    const connection = `postgresql://${user}:${pass}@${host}:${port}/${name}`
-
-    return new PostgresAdapter(connection)
-  }
-
-  private setupBucketAdapter(): S3Adapter {
-    return new S3Adapter()
-  }
-
-  private setupServices(db: PostgresAdapter, bucketAdapter: S3Adapter) {
-    const bucket = process.env.BUCKET_NAME || 'BUCKET_NAME not set!'
-
-    return {
-      usersRepository: new UsersRepository(db),
-      apiKeys: new ApiKeysRepository(db),
-      uploadsBucket: new UploadsBucket(bucketAdapter, bucket),
-      uploadsRepository: new UploadsRepository(db),
-      processRequestsRepository: new ProcessRequestsRepository(db)
-    }
-  }
-
-  private setupApplicationServices(
-    uploadsBucket: UploadsBucket,
-    uploadsRepository: UploadsRepository,
-    processRequestsRepository: ProcessRequestsRepository
-  ) {
-    return {
-      uploadsAppService: new UploadsApplicationService(
-        uploadsBucket,
-        uploadsRepository
-      ),
-      processRequestsAppService: new ProcessRequestsAppService(
-        processRequestsRepository
-      )
-    }
-  }
-
   private build() {
-    const dbAdapter = this.setupDatabaseAdapter()
-    const bucketAdapter = this.setupBucketAdapter()
-
-    const {
-      apiKeys,
-      uploadsBucket,
-      uploadsRepository,
-      usersRepository,
-      processRequestsRepository
-    } = this.setupServices(dbAdapter, bucketAdapter)
-
-    const {
-      uploadsAppService,
-      processRequestsAppService
-    } = this.setupApplicationServices(
-      uploadsBucket,
-      uploadsRepository,
-      processRequestsRepository
-    )
+    const container = buildContainer()
 
     const router = new Router()
+    const routers: { path: string, id: symbol }[] = [
+      { path: '/auth', id: ROUTERS.AuthRouter },
+      { path: '/nerf', id: ROUTERS.NerfRouter },
+    ]
+
+    // TODO -> Refactor into a HealthcheckRouter
     router.get('/healthcheck', (ctx) => {
       ctx.body = { health: 'ok' }
 
       return
     })
 
-    const childRouters = [
-      { path: '/auth', router: new AuthRouter().router },
-      {
-        path: '/nerf',
-        router: new NerfRouter(
-          apiKeys,
-          uploadsAppService,
-          processRequestsAppService
-        ).router
-      },
-    ]
-
-    for (let i = 0; i < childRouters.length; i++) {
-      const childRouter = childRouters[i]
-      router.use(
-        childRouter.path,
-        childRouter.router.routes(),
-        childRouter.router.allowedMethods()
-      )
+    for (let i = 0; i < routers.length; i++) {
+      const { path, id } = routers[i]
+      const subRouter = container.get<IRouter<State, Context>>(id).router
+      router.use(path, subRouter.routes(), subRouter.allowedMethods())
     }
 
     this.app
@@ -143,9 +81,21 @@ export default class NerfbotRestApi {
       })
   }
 
+  private async testRedisAndThrowOnFailedConnection() {
+    try {
+      const redisClient = createClient(config.redis)
+      await redisClient.connect()
+    } catch (error) {
+      console.error('Redis connection failed, see error below')
+
+      throw error
+    }
+  }
+
   start() {
     if (!this.server) {
-      this.server = this.app.listen(this.port, () => {
+      this.server = this.app.listen(this.port, async () => {
+        await this.testRedisAndThrowOnFailedConnection()
         console.log(`Nerfbot REST API listening on port ${this.port}`)
       })
     }

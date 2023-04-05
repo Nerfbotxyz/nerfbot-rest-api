@@ -1,10 +1,21 @@
 import { IncomingMessage } from 'http'
 import busboy from 'busboy'
+import { inject, injectable } from 'inversify'
 
 import { S3Adapter } from '../../infra/bucket/adapter'
+import { AppConfig } from '../../inversify.config'
+import { IBucketService } from './'
 
-export default class UploadsBucketService {
-  constructor(private adapter: S3Adapter, private bucket: string) {}
+@injectable()
+export default class UploadsBucketService implements IBucketService {
+  bucket: string
+
+  constructor(
+    @inject('S3Adapter') private adapter: S3Adapter,
+    @inject('AppConfig') private config: AppConfig
+  ) {
+    this.bucket = this.config.s3.bucket
+  }
 
   async upload(id: string, req: IncomingMessage) {
     return new Promise<string>(async (resolve, reject) => {

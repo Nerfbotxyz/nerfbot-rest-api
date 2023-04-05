@@ -1,15 +1,19 @@
+import { inject, injectable } from 'inversify'
+
 import { PostgresAdapter } from '../../infra/db/adapter'
+import { IRepository } from './'
 
 const schema = 'nerfbot'
 
-export default class BaseRepository<T extends {}> {
-  protected tableName: string = 'base'
+@injectable()
+export default class BaseRepository<T extends {}> implements IRepository<T> {
+  tableName: string = 'base'
 
   protected get table() {
     return this.db.client<T>(this.tableName).withSchema(schema)
   }
 
-  constructor(protected db: PostgresAdapter) {}
+  constructor(@inject('PostgresAdapter') protected db: PostgresAdapter) {}
 
   async list(thing?: Partial<T>): Promise<T[]> {
     let query = this.table
