@@ -71,8 +71,7 @@ More endpoints will be added as functionality is developed.
 - `POST` `/nerf/uploads` - Post a new upload request, one or many files, as
 form data
 - `GET` `/nerf/uploads` - List your upload requests
-- `POST` `/nerf/uploads/:uploadId/process` - Post a new process request to prep
-an upload for training
-- `GET` `/nerf/process-requests` - List your process requests (with statuses)
-- `GET` `/nerf/process-request/:processRequestId` - Get a process request by ID
-(with status)
+- `POST` `/nerf/uploads/:uploadId/process` - Post a new process job request to
+prep an upload for training
+- `GET` `/nerf/jobs` - List your process job requests (with statuses)
+- `GET` `/nerf/jobs/:jobId` - Get a process job request by ID (with status)
