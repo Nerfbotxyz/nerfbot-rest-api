@@ -4,7 +4,7 @@ import { inject, injectable } from 'inversify'
 import { Context, ParameterizedContext, State } from '~/app'
 import {
   APP_SERVICES,
-  ProcessRequestsAppService,
+  JobsAppService,
   UploadsAppService
 } from '~/app-services'
 
@@ -17,8 +17,8 @@ export default class NerfUploadsRouter {
   constructor(
     @inject(APP_SERVICES.UploadsAppService)
     private uploadsAppService: UploadsAppService,
-    @inject(APP_SERVICES.ProcessRequestsAppService)
-    private processRequestsAppService: ProcessRequestsAppService
+    @inject(APP_SERVICES.JobsAppService)
+    private jobsAppService: JobsAppService
   ) {
     this.build()
   }
@@ -105,14 +105,14 @@ export default class NerfUploadsRouter {
 
   private async processUpload(ctx: ParameterizedContext) {
     try {
-      const processRequest = await this.processRequestsAppService.create(
+      const processJob = await this.jobsAppService.createProcessJob(
         ctx.state.auth!.userId,
         ctx.state.auth!.apiKey,
         ctx.params.uploadId
       )
 
       ctx.status = 200
-      ctx.body = processRequest
+      ctx.body = processJob
 
       return
     } catch (error) {

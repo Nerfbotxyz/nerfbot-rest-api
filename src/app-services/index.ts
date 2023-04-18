@@ -2,8 +2,8 @@ export interface IAppService {}
 
 export const APP_SERVICES = {
   UploadsAppService: Symbol.for('UploadsAppService'),
-  ProcessRequestsAppService: Symbol.for('ProcessRequestsAppService')
+  JobsAppService: Symbol.for('JobsAppService')
 }
 
 export { default as UploadsAppService } from './uploads'
-export { default as ProcessRequestsAppService } from './processRequests'
+export { default as JobsAppService } from './jobs'

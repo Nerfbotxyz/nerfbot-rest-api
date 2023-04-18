@@ -17,22 +17,22 @@ import {
   ApiKey,
   ApiKeysRepository,
   IRepository,
-  ProcessRequestsRepository,
+  JobsRepository,
   REPOSITORIES,
   Upload,
   UploadsRepository,
   User,
   UsersRepository
 } from './service/repository'
-import { ProcessRequest } from './core'
+import { Job } from './core'
 import {
   APP_SERVICES,
   IAppService,
-  ProcessRequestsAppService,
+  JobsAppService,
   UploadsAppService
 } from './app-services'
 import { BUCKETS, IBucketService, UploadsBucket } from './service/bucket'
-import { IQueueService, ProcessQueue, QUEUES } from './service/queue'
+import { IQueueService, JobQueue, QUEUES } from './service/queue'
 
 const user = process.env.DB_USER || 'DB_USER not set!'
 const pass = process.env.DB_PASS || 'DB_PASS not set!'
@@ -75,7 +75,7 @@ export const buildContainer = (): Container => {
   /**
    * Services - Queues
    */
-  container.bind<IQueueService>(QUEUES.ProcessQueue).to(ProcessQueue)
+  container.bind<IQueueService>(QUEUES.JobQueue).to(JobQueue)
 
   /**
    * Services - Repositories
@@ -84,8 +84,8 @@ export const buildContainer = (): Container => {
     .bind<IRepository<ApiKey>>(REPOSITORIES.ApiKeysRepository)
     .to(ApiKeysRepository)
   container
-    .bind<IRepository<ProcessRequest>>(REPOSITORIES.ProcessRequestsRepository)
-    .to(ProcessRequestsRepository)
+    .bind<IRepository<Job>>(REPOSITORIES.JobsRepository)
+    .to(JobsRepository)
   container
     .bind<IRepository<Upload>>(REPOSITORIES.UploadsRepository)
     .to(UploadsRepository)
@@ -100,8 +100,8 @@ export const buildContainer = (): Container => {
     .bind<IAppService>(APP_SERVICES.UploadsAppService)
     .to(UploadsAppService)
   container
-    .bind<IAppService>(APP_SERVICES.ProcessRequestsAppService)
-    .to(ProcessRequestsAppService)
+    .bind<IAppService>(APP_SERVICES.JobsAppService)
+    .to(JobsAppService)
 
   /**
    * Routers

@@ -1,7 +1,7 @@
 export interface IQueueService {}
 
 export const QUEUES = {
-  ProcessQueue: Symbol.for('ProcessQueue')
+  JobQueue: Symbol.for('JobQueue')
 }
 
-export { default as ProcessQueue } from './process'
+export { default as JobQueue } from './job'
