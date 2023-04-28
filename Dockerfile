@@ -1,5 +1,7 @@
 FROM node:16-alpine
 
+CMD mkdir /app
+WORKDIR /app
 ADD . .
 RUN npm install
 
