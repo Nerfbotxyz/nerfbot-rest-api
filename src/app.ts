@@ -7,6 +7,7 @@ import { createClient } from 'redis'
 import { IRouter, ROUTERS } from './interface/router'
 import { AuthState } from './interface/middleware'
 import { buildContainer, config } from './inversify.config'
+import { PostgresAdapter } from './infra/db/adapter'
 
 export type State = Koa.DefaultState & {
   auth?: AuthState
@@ -22,6 +23,7 @@ export default class NerfbotRestApi {
   private port: number = 1987
   server!: Server
   app: Koa = new Koa()
+  private db!: PostgresAdapter
 
   constructor() {
     this.build()
@@ -29,6 +31,8 @@ export default class NerfbotRestApi {
 
   private build() {
     const container = buildContainer()
+
+    this.db = container.get<PostgresAdapter>('PostgresAdapter')
 
     const router = new Router()
     const routers: { path: string, id: symbol }[] = [
@@ -78,10 +82,21 @@ export default class NerfbotRestApi {
     }
   }
 
+  private async testPostgresAndThrowOnFailedConnection() {
+    try {
+      await this.db.client.raw('SELECT 1')
+    } catch (error) {
+      console.error('Postgres connection failed, see error below')
+
+      throw error
+    }
+  }
+
   start() {
     if (!this.server) {
       this.server = this.app.listen(this.port, async () => {
         await this.testRedisAndThrowOnFailedConnection()
+        await this.testPostgresAndThrowOnFailedConnection()
         console.log(`Nerfbot REST API listening on port ${this.port}`)
       })
     }

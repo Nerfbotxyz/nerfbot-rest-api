@@ -2,6 +2,14 @@ import { inject, injectable } from 'inversify'
 import { JobQueue, QUEUES } from '~/service/queue'
 import { JobsRepository, REPOSITORIES } from '~/service/repository'
 
+export type NerfProcessDataInputType =
+  | 'images'
+  | 'video'
+  | 'polycam'
+  | 'metashape'
+  | 'realitycapture'
+  | 'record3d'
+
 @injectable()
 export default class JobsAppService {
   constructor(
@@ -9,12 +17,18 @@ export default class JobsAppService {
     @inject(REPOSITORIES.JobsRepository) private jobsRepository: JobsRepository
   ) {}
 
-  async createProcessJob(userId: number, apiKey: string, uploadId: string) {
+  async createProcessJob(
+    userId: number,
+    apiKey: string,
+    uploadId: string,
+    mediaType: string
+  ) {
+    // TODO -> validate media type to NerfProcessDataInputType
     const job = await this.jobsRepository.create({
       userId,
       apiKey,
       jobName: 'process',
-      jobData: { uploadId }
+      jobData: { uploadId, mediaType }
     })
 
     await this.jobQueue.add(job)

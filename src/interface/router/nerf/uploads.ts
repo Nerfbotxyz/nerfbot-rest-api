@@ -8,7 +8,7 @@ import {
   UploadsAppService
 } from '~/app-services'
 
-const MAX_UPLOAD_SIZE_BYTES = 5000000 // 5mb
+const MAX_UPLOAD_SIZE_BYTES = 500000000 // 500mb
 
 @injectable()
 export default class NerfUploadsRouter {
@@ -105,10 +105,15 @@ export default class NerfUploadsRouter {
 
   private async processUpload(ctx: ParameterizedContext) {
     try {
+      const mediaType = Array.isArray(ctx.query.mediaType)
+        ? ctx.query.mediaType[0]
+        : ctx.query.mediaType
+
       const processJob = await this.jobsAppService.createProcessJob(
         ctx.state.auth!.userId,
         ctx.state.auth!.apiKey,
-        ctx.params.uploadId
+        ctx.params.uploadId,
+        mediaType || ''
       )
 
       ctx.status = 200

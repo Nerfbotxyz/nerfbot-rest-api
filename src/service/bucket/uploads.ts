@@ -21,7 +21,7 @@ export default class UploadsBucketService implements IBucketService {
     return new Promise<string>(async (resolve, reject) => {
       const bus = busboy({
         headers: req.headers,
-        limits: { fileSize: 5e6 } // 5mb TODO -> configurable
+        limits: { fileSize: 5e8 } // 500mb TODO -> configurable
       })
 
       bus.on('file', async (name, stream, { filename, mimeType }) => {
