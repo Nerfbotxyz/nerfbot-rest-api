@@ -1,3 +1,5 @@
+import { injectable } from 'inversify'
+
 import BaseRepository from './base'
 
 export interface Upload {
@@ -6,8 +8,9 @@ export interface Upload {
   uploadId: string
 }
 
+@injectable()
 export default class UploadsRepository extends BaseRepository<Upload> {
-  protected tableName: string = 'uploads'
+  tableName: string = 'uploads'
 
   async create(upload: Upload): Promise<string> {
     return await this.table.insert(upload).returning('uploadId')

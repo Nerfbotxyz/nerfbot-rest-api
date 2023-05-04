@@ -1,3 +1,5 @@
+import { injectable } from 'inversify'
+
 import BaseRepository from './base'
 
 export interface User {
@@ -5,6 +7,7 @@ export interface User {
   username: string
 }
 
+@injectable()
 export default class UsersRepository extends BaseRepository<User> {
-  protected tableName: string = 'users'
+  tableName: string = 'users'
 }

@@ -1,12 +1,16 @@
 import { IncomingMessage } from 'http'
 import { v4 as uuidv4 } from 'uuid'
+import { inject, injectable } from 'inversify'
 
-import { UploadsBucket } from '../service/bucket'
-import { Upload, UploadsRepository } from '../service/repository'
+import { BUCKETS, UploadsBucket } from '~/service/bucket'
+import { REPOSITORIES, Upload, UploadsRepository } from '~/service/repository'
+import { IAppService } from './'
 
-export default class UploadsApplicationService {
+@injectable()
+export default class UploadsAppService implements IAppService {
   constructor(
-    private uploadsBucket: UploadsBucket,
+    @inject(BUCKETS.UploadsBucket) private uploadsBucket: UploadsBucket,
+    @inject(REPOSITORIES.UploadsRepository)
     private uploadsRepository: UploadsRepository
   ) {}
 

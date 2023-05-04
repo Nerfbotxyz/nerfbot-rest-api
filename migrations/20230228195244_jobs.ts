@@ -4,8 +4,8 @@ import { onUpdateTrigger, SCHEMA_NAME } from '../knexfile'
 
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.withSchema(SCHEMA_NAME)
-    .createTable('process_requests', table => {
-      table.uuid('processRequestId')
+    .createTable('jobs', table => {
+      table.uuid('id')
         .unique()
         .notNullable()
         .primary()
@@ -18,24 +18,22 @@ export async function up(knex: Knex): Promise<void> {
         .notNullable()
         .references('apiKey')
         .inTable(`${SCHEMA_NAME}.api_keys`)
-      table.uuid('uploadId')
-        .notNullable()
-        .references('uploadId')
-        .inTable(`${SCHEMA_NAME}.uploads`)
       table.enu(
         'status',
         ['WAITING', 'PROCESSING', 'ERROR', 'COMPLETE'],
-        { useNative: true, enumName: 'request_status' }
+        { useNative: true, enumName: 'job_status' }
       ).defaultTo('WAITING')
+      table.string('jobName').notNullable()
+      table.jsonb('jobData')
       table.timestamps(true, true)
     })
   await knex.schema.withSchema(SCHEMA_NAME)
-    .raw(onUpdateTrigger('process_requests'))
+    .raw(onUpdateTrigger('jobs'))
 }
 
 export async function down(knex: Knex): Promise<void> {
   await knex.schema.withSchema(SCHEMA_NAME)
-    .dropTableIfExists('process_requests')
+    .dropTableIfExists('jobs')
   await knex.schema.withSchema(SCHEMA_NAME)
-    .raw(`DROP TYPE IF EXISTS ${SCHEMA_NAME}.request_status`)
+    .raw(`DROP TYPE IF EXISTS ${SCHEMA_NAME}.job_status`)
 }
