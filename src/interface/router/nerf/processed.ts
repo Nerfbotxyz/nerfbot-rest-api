@@ -2,7 +2,11 @@ import Router from '@koa/router'
 import { inject, injectable } from 'inversify'
 
 import { Context, ParameterizedContext, State } from '~/app'
-import { APP_SERVICES, ProcessedAppService } from '~/app-services'
+import {
+  APP_SERVICES,
+  JobsAppService,
+  ProcessedAppService
+} from '~/app-services'
 
 @injectable()
 export default class NerfProcessedRouter {
@@ -10,7 +14,9 @@ export default class NerfProcessedRouter {
 
   constructor(
     @inject(APP_SERVICES.ProcessedAppService)
-    private processedAppService: ProcessedAppService
+    private processedAppService: ProcessedAppService,
+    @inject(APP_SERVICES.JobsAppService)
+    private jobsAppService: JobsAppService
   ) {
     this.build()
   }
@@ -18,6 +24,22 @@ export default class NerfProcessedRouter {
   private build() {
     this.router.get('/', this.listProcessed.bind(this))
     this.router.get('/:processedId', this.getProcessed.bind(this))
+    this.router.post('/:processedId/train', this.trainProcessed.bind(this))
+  }
+
+  private async trainProcessed(ctx: ParameterizedContext) {
+    try {
+      const trainingJob = await this.jobsAppService.createTrainingJob(
+        ctx.state.auth!.userId,
+        ctx.state.auth!.apiKey,
+        ctx.params.processedId
+      )
+    } catch (error) {
+      console.error('[NerfProcessedRouter][POST][trainProcessed]', error)
+      ctx.status = 500
+
+      return
+    }
   }
 
   private async getProcessed(ctx: ParameterizedContext) {

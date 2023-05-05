@@ -7,6 +7,7 @@ import {
   IRouter,
   NerfJobsRouter,
   NerfRouter,
+  NerfTrainingsRouter,
   NerfUploadsRouter,
   ROUTERS,
 } from './interface/router'
@@ -21,6 +22,8 @@ import {
   Processed,
   ProcessedRepository,
   REPOSITORIES,
+  Training,
+  TrainingsRepository,
   Upload,
   UploadsRepository,
   User,
@@ -32,6 +35,7 @@ import {
   IAppService,
   JobsAppService,
   ProcessedAppService,
+  TrainingsAppService,
   UploadsAppService
 } from './app-services'
 import { BUCKETS, IBucketService, UploadsBucket } from './service/bucket'
@@ -94,6 +98,9 @@ export const buildContainer = (): Container => {
     .bind<IRepository<Processed>>(REPOSITORIES.ProcessedRepository)
     .to(ProcessedRepository)
   container
+    .bind<IRepository<Training>>(REPOSITORIES.TrainingsRepository)
+    .to(TrainingsRepository)
+  container
     .bind<IRepository<Upload>>(REPOSITORIES.UploadsRepository)
     .to(UploadsRepository)
   container
@@ -112,6 +119,9 @@ export const buildContainer = (): Container => {
   container
     .bind<IAppService>(APP_SERVICES.ProcessedAppService)
     .to(ProcessedAppService)
+    container
+    .bind<IAppService>(APP_SERVICES.TrainingsAppService)
+    .to(TrainingsAppService)
 
   /**
    * Routers
@@ -123,6 +133,9 @@ export const buildContainer = (): Container => {
   container
     .bind<IRouter<State, Context>>(ROUTERS.NerfProcessedRouter)
     .to(NerfProcessedRouter)
+  container
+    .bind<IRouter<State, Context>>(ROUTERS.NerfTrainingsRouter)
+    .to(NerfTrainingsRouter)
   container
     .bind<IRouter<State, Context>>(ROUTERS.NerfUploadsRouter)
     .to(NerfUploadsRouter)
