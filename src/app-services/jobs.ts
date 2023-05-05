@@ -36,6 +36,20 @@ export default class JobsAppService {
     return job
   }
 
+  async createTrainingJob(
+    userId: number,
+    apiKey: string,
+    processedId: string
+  ) {
+    const job = await this.jobsRepository.create({
+      userId, apiKey, jobName: 'train', jobData: { processedId }
+    })
+
+    await this.jobQueue.add(job)
+
+    return job
+  }
+
   async get(apiKey: string, jobId: string) {
     return await this.jobsRepository.first({ apiKey, id: jobId })
   }
