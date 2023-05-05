@@ -6,11 +6,12 @@ import { ApiKeysRepository, REPOSITORIES } from '~/service/repository'
 import { requireApiToken } from '~/interface/middleware'
 import NerfUploadsRouter from './uploads'
 import NerfJobsRouter from './jobs'
-import { ROUTERS } from '../'
+import { NerfTrainingsRouter, ROUTERS } from '../'
 import NerfProcessedRouter from './processed'
 
 export { default as NerfJobsRouter } from './jobs'
 export { default as NerfUploadsRouter } from './uploads'
+export { default as NerfTrainingsRouter } from './trainings'
 
 @injectable()
 export default class NerfRouter {
@@ -21,7 +22,9 @@ export default class NerfRouter {
     @inject(ROUTERS.NerfJobsRouter) private jobsRouter: NerfJobsRouter,
     @inject(ROUTERS.NerfUploadsRouter) private uploadsRouter: NerfUploadsRouter,
     @inject(ROUTERS.NerfProcessedRouter)
-    private processedRouter: NerfProcessedRouter
+    private processedRouter: NerfProcessedRouter,
+    @inject(ROUTERS.NerfTrainingsRouter)
+    private trainingsRouter: NerfTrainingsRouter
   ) {
     this.build()
   }
@@ -43,8 +46,10 @@ export default class NerfRouter {
       this.processedRouter.router.routes(),
       this.processedRouter.router.allowedMethods()
     )
+    this.router.use(
+      '/trainings',
+      this.trainingsRouter.router.routes(),
+      this.trainingsRouter.router.allowedMethods()
+    )
   }
 }
-
-
-
