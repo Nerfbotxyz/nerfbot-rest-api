@@ -34,6 +34,11 @@ export default class NerfProcessedRouter {
         ctx.state.auth!.apiKey,
         ctx.params.processedId
       )
+
+      ctx.status = 200
+      ctx.body = trainingJob
+
+      return
     } catch (error) {
       console.error('[NerfProcessedRouter][POST][trainProcessed]', error)
       ctx.status = 500
