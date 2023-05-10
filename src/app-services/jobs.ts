@@ -50,6 +50,20 @@ export default class JobsAppService {
     return job
   }
 
+  async createRenderJob(
+    userId: number,
+    apiKey: string,
+    trainingId: string
+  ) {
+    const job = await this.jobsRepository.create({
+      userId, apiKey, jobName: 'render', jobData: { trainingId }
+    })
+
+    await this.jobQueue.add(job)
+
+    return job
+  }
+
   async get(apiKey: string, jobId: string) {
     return await this.jobsRepository.first({ apiKey, id: jobId })
   }

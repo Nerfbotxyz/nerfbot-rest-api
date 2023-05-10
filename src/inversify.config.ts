@@ -22,6 +22,8 @@ import {
   Processed,
   ProcessedRepository,
   REPOSITORIES,
+  Render,
+  RendersRepository,
   Training,
   TrainingsRepository,
   Upload,
@@ -35,12 +37,14 @@ import {
   IAppService,
   JobsAppService,
   ProcessedAppService,
+  RendersAppService,
   TrainingsAppService,
   UploadsAppService
 } from './app-services'
 import { BUCKETS, IBucketService, UploadsBucket } from './service/bucket'
 import { IQueueService, JobQueue, QUEUES } from './service/queue'
 import NerfProcessedRouter from './interface/router/nerf/processed'
+import NerfRendersRouter from './interface/router/nerf/renders'
 
 const user = process.env.DB_USER || 'DB_USER not set!'
 const pass = process.env.DB_PASS || 'DB_PASS not set!'
@@ -98,6 +102,9 @@ export const buildContainer = (): Container => {
     .bind<IRepository<Processed>>(REPOSITORIES.ProcessedRepository)
     .to(ProcessedRepository)
   container
+    .bind<IRepository<Render>>(REPOSITORIES.RendersRepository)
+    .to(RendersRepository)
+  container
     .bind<IRepository<Training>>(REPOSITORIES.TrainingsRepository)
     .to(TrainingsRepository)
   container
@@ -119,9 +126,12 @@ export const buildContainer = (): Container => {
   container
     .bind<IAppService>(APP_SERVICES.ProcessedAppService)
     .to(ProcessedAppService)
-    container
+  container
     .bind<IAppService>(APP_SERVICES.TrainingsAppService)
     .to(TrainingsAppService)
+  container
+    .bind<IAppService>(APP_SERVICES.RendersAppService)
+    .to(RendersAppService)
 
   /**
    * Routers
@@ -139,8 +149,10 @@ export const buildContainer = (): Container => {
   container
     .bind<IRouter<State, Context>>(ROUTERS.NerfUploadsRouter)
     .to(NerfUploadsRouter)
+  container
+    .bind<IRouter<State, Context>>(ROUTERS.NerfRendersRouter)
+    .to(NerfRendersRouter)
   container.bind<IRouter<State, Context>>(ROUTERS.NerfRouter).to(NerfRouter)
-
 
   return container
 }

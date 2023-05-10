@@ -10,7 +10,8 @@ export const ROUTERS = {
   NerfUploadsRouter: Symbol.for('NerfUploadsRouter'),
   NerfJobsRouter: Symbol.for('NerfJobsRouter'),
   NerfProcessedRouter: Symbol.for('NerfProcessedRouter'),
-  NerfTrainingsRouter: Symbol.for('NerfTrainingsRouter')
+  NerfTrainingsRouter: Symbol.for('NerfTrainingsRouter'),
+  NerfRendersRouter: Symbol.for('NerfRendersRouter')
 }
 
 export * from './auth'
