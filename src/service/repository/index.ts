@@ -4,6 +4,7 @@ export interface IRepository<T = {}> {
 
 export const REPOSITORIES = {
   ApiKeysRepository: Symbol.for('ApiKeysRepository'),
+  ExportsRepository: Symbol.for('ExportsRepository'),
   JobsRepository: Symbol.for('JobsRepository'),
   ProcessedRepository: Symbol.for('ProcessedRepository'),
   RendersRepository: Symbol.for('RendersRepository'),
@@ -14,6 +15,8 @@ export const REPOSITORIES = {
 
 export { default as ApiKeysRepository } from './apiKey'
 export * from './apiKey'
+export { default as ExportsRepository } from './exports'
+export * from './exports'
 export { default as JobsRepository } from './jobs'
 export * from './jobs'
 export { default as ProcessedRepository } from './processed'

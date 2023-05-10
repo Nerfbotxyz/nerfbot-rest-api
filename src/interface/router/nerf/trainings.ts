@@ -21,6 +21,27 @@ export default class NerfTrainingsRouter {
     this.router.get('/', this.listTrainings.bind(this))
     this.router.get('/:trainingId', this.getTraining.bind(this))
     this.router.post('/:trainingId/render', this.renderTraining.bind(this))
+    this.router.post('/:trainingId/export', this.exportTraining.bind(this))
+  }
+
+  private async exportTraining(ctx: ParameterizedContext) {
+    try {
+      const exportJob = await this.jobsAppService.createExportJob(
+        ctx.state.auth!.userId,
+        ctx.state.auth!.apiKey,
+        ctx.params.trainingId
+      )
+
+      ctx.status = 200
+      ctx.body = exportJob
+
+      return
+    } catch (error) {
+      console.error('[NerfTrainingsRouter][POST][exportTraining]', error)
+      ctx.status = 500
+
+      return
+    }
   }
 
   private async renderTraining(ctx: ParameterizedContext) {
