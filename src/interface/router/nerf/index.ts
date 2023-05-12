@@ -9,6 +9,7 @@ import NerfJobsRouter from './jobs'
 import { NerfTrainingsRouter, ROUTERS } from '../'
 import NerfProcessedRouter from './processed'
 import NerfRendersRouter from './renders'
+import NerfExportsRouter from './exports'
 
 export { default as NerfJobsRouter } from './jobs'
 export { default as NerfUploadsRouter } from './uploads'
@@ -27,7 +28,9 @@ export default class NerfRouter {
     @inject(ROUTERS.NerfTrainingsRouter)
     private trainingsRouter: NerfTrainingsRouter,
     @inject(ROUTERS.NerfRendersRouter)
-    private rendersRouter: NerfRendersRouter
+    private rendersRouter: NerfRendersRouter,
+    @inject(ROUTERS.NerfExportsRouter)
+    private exportsRouter: NerfExportsRouter
   ) {
     this.build()
   }
@@ -58,6 +61,11 @@ export default class NerfRouter {
       '/renders',
       this.rendersRouter.router.routes(),
       this.rendersRouter.router.allowedMethods()
+    )
+    this.router.use(
+      '/exports',
+      this.exportsRouter.router.routes(),
+      this.exportsRouter.router.allowedMethods()
     )
   }
 }

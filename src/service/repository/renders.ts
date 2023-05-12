@@ -15,7 +15,7 @@ export interface Render {
 export default class RendersRepository extends BaseRepository<Render> {
   tableName: string = 'renders'
 
-  async create(training: Render): Promise<string> {
-    return await this.table.insert(training).returning('renderId')
+  async create(render: Render): Promise<string> {
+    return await this.table.insert(render).returning('renderId')
   }
 }

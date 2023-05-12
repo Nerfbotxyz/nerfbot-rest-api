@@ -17,8 +17,10 @@ import { BullAdapter } from './infra/queue/adapter'
 import {
   ApiKey,
   ApiKeysRepository,
+  ExportsRepository,
   IRepository,
   JobsRepository,
+  NerfExport,
   Processed,
   ProcessedRepository,
   REPOSITORIES,
@@ -34,6 +36,7 @@ import {
 import { Job } from './core'
 import {
   APP_SERVICES,
+  ExportsAppService,
   IAppService,
   JobsAppService,
   ProcessedAppService,
@@ -45,6 +48,7 @@ import { BUCKETS, IBucketService, UploadsBucket } from './service/bucket'
 import { IQueueService, JobQueue, QUEUES } from './service/queue'
 import NerfProcessedRouter from './interface/router/nerf/processed'
 import NerfRendersRouter from './interface/router/nerf/renders'
+import NerfExportsRouter from './interface/router/nerf/exports'
 
 const user = process.env.DB_USER || 'DB_USER not set!'
 const pass = process.env.DB_PASS || 'DB_PASS not set!'
@@ -96,6 +100,9 @@ export const buildContainer = (): Container => {
     .bind<IRepository<ApiKey>>(REPOSITORIES.ApiKeysRepository)
     .to(ApiKeysRepository)
   container
+    .bind<IRepository<NerfExport>>(REPOSITORIES.ExportsRepository)
+    .to(ExportsRepository)
+  container
     .bind<IRepository<Job>>(REPOSITORIES.JobsRepository)
     .to(JobsRepository)
   container
@@ -132,6 +139,9 @@ export const buildContainer = (): Container => {
   container
     .bind<IAppService>(APP_SERVICES.RendersAppService)
     .to(RendersAppService)
+  container
+    .bind<IAppService>(APP_SERVICES.ExportsAppService)
+    .to(ExportsAppService)
 
   /**
    * Routers
@@ -152,6 +162,11 @@ export const buildContainer = (): Container => {
   container
     .bind<IRouter<State, Context>>(ROUTERS.NerfRendersRouter)
     .to(NerfRendersRouter)
+  container
+    .bind<IRouter<State, Context>>(ROUTERS.NerfExportsRouter)
+    .to(NerfExportsRouter)
+  
+  /* NB: NerfRouter must be last as it depends on the above routers */
   container.bind<IRouter<State, Context>>(ROUTERS.NerfRouter).to(NerfRouter)
 
   return container
