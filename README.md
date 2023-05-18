@@ -62,6 +62,8 @@ $ npm run dev
 
 Every step in the overall process, aside from initially uploading user artifacts in step 1 below, is handled by a background job.
 The status of these jobs can be fetched via `/nerf/jobs` endpoints with corresponding `jobId` being returned from endpoints that involve background jobs.
+When a job is complete, it will contain the corresponding output artifact's id in its `jobData`.
+For example, a completed export job's `jobData` will have both `trainingId` from its input and `exportId` from its output.
 
 1) Upload images or video as form data by POSTing to the `/nerf/uploads` endpoint
 2) Process an upload by `uploadId` via `/nerf/uploads/:uploadId/process`, making sure to include `mediaType` in the query params (either `images` or `video`)
