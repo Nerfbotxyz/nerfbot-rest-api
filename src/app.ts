@@ -41,11 +41,13 @@ export default class NerfbotRestApi {
     ]
 
     // TODO -> Refactor into a HealthcheckRouter
-    router.get('/healthcheck', (ctx) => {
+    const healthcheck = (ctx: ParameterizedContext) => {
       ctx.body = { health: 'ok' }
 
       return
-    })
+    }
+    router.get('/', healthcheck)
+    router.get('/healthcheck', healthcheck)
 
     for (let i = 0; i < routers.length; i++) {
       const { path, id } = routers[i]
