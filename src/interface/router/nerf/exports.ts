@@ -18,6 +18,7 @@ export default class NerfExportsRouter {
   private build() {
     this.router.get('/', this.listExports.bind(this))
     this.router.get('/:exportId', this.getExport.bind(this))
+    this.router.get('/:exportId/download', this.downloadExport.bind(this))
   }
 
   private async listExports(ctx: ParameterizedContext) {
@@ -28,14 +29,12 @@ export default class NerfExportsRouter {
 
       ctx.status = 200
       ctx.body = { nerfExports }
-
-      return
     } catch (error) {
       console.error('[NerfExportsRouter][GET][listExports]', error)
       ctx.status = 500
-
-      return
     }
+
+    return
   }
 
   private async getExport(ctx: ParameterizedContext) {
@@ -47,13 +46,35 @@ export default class NerfExportsRouter {
 
       ctx.status = 200
       ctx.body = { nerfExport }
-
-      return
     } catch (error) {
       console.error('[NerfExportsRouter][GET][getExport]', error)
       ctx.status = 500
+    }
 
-      return
+    return
+  }
+
+  private async downloadExport(ctx: ParameterizedContext) {
+    try {
+      const downloadStream = await this.exportsAppService.getDownloadStream(
+        ctx.state.auth!.apiKey,
+        ctx.params.exportId
+      )
+
+      if (downloadStream) {
+        ctx.status = 200
+        ctx.body = downloadStream
+        ctx.set({
+          'Content-Type': 'application/zip',
+          'Content-Disposition':
+            `attachment; filename="${ctx.params.exportId}.zip"`
+        })
+      } else {
+        ctx.status = 404
+      }
+    } catch (error) {
+      console.error('[NerfExportsRouter][GET][downloadExport]', error)
+      ctx.status = 500
     }
   }
 }
