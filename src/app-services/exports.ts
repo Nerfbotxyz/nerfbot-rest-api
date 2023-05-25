@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify'
 import archiver from 'archiver'
 import { constants } from 'zlib'
-import { Readable, PassThrough, Writable } from 'stream'
+import { PassThrough } from 'stream'
 
 import { IAppService } from './'
 import {
@@ -14,11 +14,6 @@ import { AppConfig } from '~/inversify.config'
 
 @injectable()
 export default class ExportsAppService implements IAppService {
-  private archiver = archiver(
-    'zip',
-    { zlib: { level: constants.Z_BEST_SPEED } }
-  )
-
   constructor(
     @inject(REPOSITORIES.ExportsRepository)
     private exportsRepository: ExportsRepository,

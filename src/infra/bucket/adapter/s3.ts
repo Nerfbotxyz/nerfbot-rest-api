@@ -1,13 +1,11 @@
 import { Upload } from '@aws-sdk/lib-storage'
 import {
   GetObjectCommand,
-  GetObjectCommandInput,
   GetObjectCommandOutput,
   ListObjectsV2Command,
   PutObjectCommandInput,
   S3Client
 } from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { SdkStream } from '@aws-sdk/types/dist-types/serde'
 import { injectable } from 'inversify'
 import { Readable } from 'stream'
