@@ -55,12 +55,15 @@ const pass = process.env.DB_PASS || 'DB_PASS not set!'
 const host = process.env.DB_HOST || 'DB_HOST not set!'
 const port = process.env.DB_PORT || 'DB_PORT not set!'
 const name = process.env.DB_NAME || 'postgres'
-const bucket = process.env.BUCKET_NAME || 'BUCKET_NAME not set!'
 
 export class AppConfig {
   db = { connection: `postgresql://${user}:${pass}@${host}:${port}/${name}` }
   redis = { url: process.env.REDIS || `redis://127.0.0.1:6379` }
-  s3 = { bucket }
+  s3: { [key: string]: string } = {
+    uploads: process.env.BUCKET_NAME || 'BUCKET_NAME not set!',
+    renders: process.env.RENDERS_BUCKET || 'RENDERS_BUCKET not set!',
+    exports: process.env.EXPORTS_BUCKET || 'EXPORTS_BUCKET not set!'
+  }
 }
 export const config = new AppConfig()
 

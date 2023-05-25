@@ -117,7 +117,9 @@ prep an upload for training
 ### Render Artifacts
 - `GET` `/nerf/renders` - List your renders
 - `GET` `/nerf/renders/:renderId` - Get (info about) a render by `renderId`
+- `GET` `/nerf/renders/:renderId/download` - Download video render (`video/mp4`)
 
-### Export Artifacts
+### Export Artifacts (Meshes, Models, Textures, etc.)
 - `GET` `/nerf/exports` - List your exports
 - `GET` `/nerf/exports/:exportId` - Get (info about) an export by `exportId`
+- `GET` `/nerf/exports/:exportId/download` - Download export archive (`application/zip`)

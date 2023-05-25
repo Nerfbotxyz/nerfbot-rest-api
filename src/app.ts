@@ -8,6 +8,7 @@ import { IRouter, ROUTERS } from './interface/router'
 import { AuthState } from './interface/middleware'
 import { buildContainer, config } from './inversify.config'
 import { PostgresAdapter } from './infra/db/adapter'
+import { S3Adapter } from './infra/bucket/adapter'
 
 export type State = Koa.DefaultState & {
   auth?: AuthState
@@ -24,6 +25,7 @@ export default class NerfbotRestApi {
   server!: Server
   app: Koa = new Koa()
   private db!: PostgresAdapter
+  private s3!: S3Adapter
 
   constructor() {
     this.build()
@@ -33,6 +35,7 @@ export default class NerfbotRestApi {
     const container = buildContainer()
 
     this.db = container.get<PostgresAdapter>('PostgresAdapter')
+    this.s3 = container.get<S3Adapter>('S3Adapter')
 
     const router = new Router()
     const routers: { path: string, id: symbol }[] = [
@@ -94,11 +97,26 @@ export default class NerfbotRestApi {
     }
   }
 
+  private async testBucketsAndThrowOnFailedConnection() {
+    try {
+      const bucketKeys = Object.keys(config.s3)
+
+      await Promise.all(
+        bucketKeys.map(key => this.s3.testConnection(config.s3[key]))
+      )
+    } catch (error) {
+      console.error('S3 connection failed, see error below')
+
+      throw error
+    }
+  }
+
   start() {
     if (!this.server) {
       this.server = this.app.listen(this.port, async () => {
         await this.testRedisAndThrowOnFailedConnection()
         await this.testPostgresAndThrowOnFailedConnection()
+        await this.testBucketsAndThrowOnFailedConnection()
         console.log(`Nerfbot REST API listening on port ${this.port}`)
       })
     }

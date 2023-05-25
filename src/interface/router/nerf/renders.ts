@@ -18,6 +18,7 @@ export default class NerfRendersRouter {
   private build() {
     this.router.get('/', this.listRenders.bind(this))
     this.router.get('/:renderId', this.getRender.bind(this))
+    this.router.get('/:renderId/download', this.downloadRender.bind(this))
   }
 
   private async listRenders(ctx: ParameterizedContext) {
@@ -28,14 +29,12 @@ export default class NerfRendersRouter {
 
       ctx.status = 200
       ctx.body = { renders }
-
-      return
     } catch (error) {
       console.error('[NerfRendersRouter][GET][listRenders]', error)
       ctx.status = 500
-
-      return
     }
+
+    return
   }
 
   private async getRender(ctx: ParameterizedContext) {
@@ -47,13 +46,34 @@ export default class NerfRendersRouter {
 
       ctx.status = 200
       ctx.body = { render }
-
-      return
     } catch (error) {
       console.error('[NerfRendersRouter][GET][getRender]', error)
       ctx.status = 500
-
-      return
     }
+
+    return
+  }
+
+  private async downloadRender(ctx: ParameterizedContext) {
+    try {
+      const downloadStream = await this.rendersAppService.getDownloadStream(
+        ctx.state.auth!.apiKey,
+        ctx.params.renderId
+      )
+
+      if (downloadStream) {
+        ctx.status = 200
+        ctx.body = downloadStream
+        ctx.set('Content-Type', 'video/mp4')
+        ctx.set('Accept-Ranges', 'bytes')
+      } else {
+        ctx.status = 404
+      }
+    } catch (error) {
+      console.error('[NerfRendersRouter][GET][downloadRender]', error)
+      ctx.status = 500
+    }
+
+    return
   }
 }

@@ -14,7 +14,7 @@ export default class UploadsBucketService implements IBucketService {
     @inject('S3Adapter') private adapter: S3Adapter,
     @inject('AppConfig') private config: AppConfig
   ) {
-    this.bucket = this.config.s3.bucket
+    this.bucket = this.config.s3.uploads
   }
 
   async upload(id: string, req: IncomingMessage) {
