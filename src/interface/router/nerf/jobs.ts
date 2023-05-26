@@ -4,10 +4,12 @@ import { inject, injectable } from 'inversify'
 import { State, Context, ParameterizedContext } from '~/app'
 import { IRouter } from '../'
 import { APP_SERVICES, JobsAppService } from '~/app-services'
+import Logger from '~/util/logger'
 
 @injectable()
 export default class NerfJobsRouter implements IRouter<State, Context> {
   router: Router<State, Context> = new Router<State, Context>()
+  logger: Logger = new Logger('NerfJobsRouter')
 
   constructor(
     @inject(APP_SERVICES.JobsAppService)
@@ -29,12 +31,14 @@ export default class NerfJobsRouter implements IRouter<State, Context> {
 
       ctx.status = 200
       ctx.body = { jobs }
-
-      return
     } catch (error) {
-      console.error('[NerfRouter][GET][listJobs]', error)
+      this.logger.error('[GET][listJobs]', error)
       ctx.status = 500
     }
+
+    this.logger.info('[GET][listJobs]', ctx.status, ctx.state.auth!.apiKey)
+
+    return
   }
 
   private async getJob(ctx: ParameterizedContext) {
@@ -46,11 +50,18 @@ export default class NerfJobsRouter implements IRouter<State, Context> {
 
       ctx.status = 200
       ctx.body = processRequest
-
-      return
     } catch (error) {
-      console.error('[NerfRouter][GET][getJob]', error)
+      this.logger.error('[GET][getJob]', error)
       ctx.status = 500
     }
+
+    this.logger.info(
+      '[GET][getJob]',
+      ctx.status,
+      ctx.state.auth!.apiKey,
+      ctx.params.jobId
+    )
+
+    return
   }
 }

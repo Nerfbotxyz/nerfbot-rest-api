@@ -5,9 +5,11 @@ import { inject, injectable } from 'inversify'
 import { S3Adapter } from '~/infra/bucket/adapter'
 import { AppConfig } from '~/inversify.config'
 import { IBucketService } from './'
+import Logger from '~/util/logger'
 
 @injectable()
 export default class UploadsBucketService implements IBucketService {
+  private logger: Logger = new Logger('UploadsBucketService')
   bucket: string
 
   constructor(
@@ -46,7 +48,7 @@ export default class UploadsBucketService implements IBucketService {
 
         req.pipe(bus)
       } catch (error) {
-        console.error('[UploadsBucketService][upload] busboy error', error)
+        this.logger.error('upload() busboy error', error)
         reject(error)
       }
     })

@@ -7,6 +7,7 @@ import {
   JobsAppService,
   UploadsAppService
 } from '~/app-services'
+import Logger from '~/util/logger'
 
 const MAX_UPLOAD_SIZE_BYTES = 500000000 // 500mb
 const UPLOAD_CONTENT_TYPES = [
@@ -17,6 +18,7 @@ const UPLOAD_CONTENT_TYPES = [
 @injectable()
 export default class NerfUploadsRouter {
   router: Router<State, Context> = new Router<State, Context>()
+  logger: Logger = new Logger('NerfUploadsRouter')
 
   constructor(
     @inject(APP_SERVICES.UploadsAppService)
@@ -45,6 +47,13 @@ export default class NerfUploadsRouter {
       if (!ctx.headers['content-length']) {
         ctx.status = 411 // HTTP 411 Length Required
 
+        this.logger.info(
+          '[POST][uploads]',
+          ctx.status,
+          ctx.state.auth!.userId,
+          ctx.state.auth!.apiKey
+        )
+
         return
       }
 
@@ -53,6 +62,13 @@ export default class NerfUploadsRouter {
         Number.isInteger(contentLength) && contentLength > MAX_UPLOAD_SIZE_BYTES
       ) {
         ctx.status = 413 // HTTP 413 Content Too Large
+
+        this.logger.info(
+          '[POST][uploads]',
+          ctx.status,
+          ctx.state.auth!.userId,
+          ctx.state.auth!.apiKey
+        )
 
         return
       }
@@ -66,6 +82,13 @@ export default class NerfUploadsRouter {
         ctx.body = `Unsupported Media Type`
           + ` - use one of: ${UPLOAD_CONTENT_TYPES.join(', ')}`
 
+        this.logger.info(
+          '[POST][uploads]',
+          ctx.status,
+          ctx.state.auth!.userId,
+          ctx.state.auth!.apiKey
+        )
+
         return
       }
 
@@ -77,14 +100,19 @@ export default class NerfUploadsRouter {
 
       ctx.status = 200
       ctx.body = { id }
-
-      return
     } catch (error) {
-      console.error('[NerfRouter][POST][uploads]', error)
+      this.logger.error('[POST][uploads]', error)
       ctx.status = 500
-
-      return
     }
+
+    this.logger.info(
+      '[POST][uploads]',
+      ctx.status,
+      ctx.state.auth!.userId,
+      ctx.state.auth!.apiKey
+    )
+
+    return
   }
 
   private async getUpload(ctx: ParameterizedContext) {
@@ -96,14 +124,17 @@ export default class NerfUploadsRouter {
 
       ctx.status = 200
       ctx.body = { upload }
-
-      return
     } catch (error) {
-      console.error('[NerfRouter][GET][getUpload]', error)
+      this.logger.error('[GET][getUpload]', error)
       ctx.status = 500
-
-      return
     }
+
+    this.logger.info(
+      '[GET][getUpload]',
+      ctx.status,
+      ctx.state.auth!.apiKey,
+      ctx.params.uploadId
+    )
   }
 
   private async listUploads(ctx: ParameterizedContext) {
@@ -114,14 +145,18 @@ export default class NerfUploadsRouter {
 
       ctx.status = 200
       ctx.body = { uploads }
-
-      return
     } catch (error) {
-      console.error('[NerfRouter][GET][listUploads]', error)
+      this.logger.error('[GET][listUploads]', error)
       ctx.status = 500
-
-      return
     }
+
+    this.logger.info(
+      '[GET][listUploads]',
+      ctx.status,
+      ctx.state.auth!.apiKey
+    )
+
+    return
   }
 
   private async processUpload(ctx: ParameterizedContext) {
@@ -139,13 +174,18 @@ export default class NerfUploadsRouter {
 
       ctx.status = 200
       ctx.body = processJob
-
-      return
     } catch (error) {
-      console.error('[NerfRouter][POST][process]', error)
+      this.logger.error('[POST][process]', error)
       ctx.status = 500
-
-      return
     }
+
+    this.logger.info(
+      '[POST][process]',
+      ctx.status,
+      ctx.state.auth!.userId,
+      ctx.state.auth!.apiKey,
+      ctx.params.uploadId,
+      ctx.query.mediaType
+    )
   }
 }

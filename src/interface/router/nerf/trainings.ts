@@ -3,10 +3,12 @@ import { inject, injectable } from 'inversify'
 
 import { Context, ParameterizedContext, State } from '~/app'
 import { APP_SERVICES, JobsAppService, TrainingsAppService } from '~/app-services'
+import Logger from '~/util/logger'
 
 @injectable()
 export default class NerfTrainingsRouter {
   router: Router<State, Context> = new Router<State, Context>()
+  logger: Logger = new Logger('NerfTrainingsRouter')
 
   constructor(
     @inject(APP_SERVICES.TrainingsAppService)
@@ -34,14 +36,20 @@ export default class NerfTrainingsRouter {
 
       ctx.status = 200
       ctx.body = exportJob
-
-      return
     } catch (error) {
-      console.error('[NerfTrainingsRouter][POST][exportTraining]', error)
+      this.logger.error('[POST][exportTraining]', error)
       ctx.status = 500
-
-      return
     }
+
+    this.logger.info(
+      '[POST][exportTraining]',
+      ctx.status,
+      ctx.state.auth!.userId,
+      ctx.state.auth!.apiKey,
+      ctx.params.trainingId
+    )
+
+    return
   }
 
   private async renderTraining(ctx: ParameterizedContext) {
@@ -54,14 +62,20 @@ export default class NerfTrainingsRouter {
 
       ctx.status = 200
       ctx.body = renderJob
-
-      return
     } catch (error) {
-      console.error('[NerfTrainingsRouter][POST][renderTraining]', error)
+      this.logger.error('[POST][renderTraining]', error)
       ctx.status = 500
-
-      return
     }
+
+    this.logger.info(
+      '[POST][renderTraining]',
+      ctx.status,
+      ctx.state.auth!.userId,
+      ctx.state.auth!.apiKey,
+      ctx.params.trainingId
+    )
+
+    return
   }
 
   private async getTraining(ctx: ParameterizedContext) {
@@ -73,14 +87,19 @@ export default class NerfTrainingsRouter {
 
       ctx.status = 200
       ctx.body = { training }
-
-      return
     } catch (error) {
-      console.error('[NerfTrainingsRouter][GET][getTraining]', error)
+      this.logger.error('[GET][getTraining]', error)
       ctx.status = 500
-
-      return
     }
+
+    this.logger.info(
+      '[GET][getTraining]',
+      ctx.status,
+      ctx.state.auth!.apiKey,
+      ctx.params.trainingId
+    )
+
+    return
   }
 
   private async listTrainings(ctx: ParameterizedContext) {
@@ -91,13 +110,13 @@ export default class NerfTrainingsRouter {
 
       ctx.status = 200
       ctx.body = { trainings }
-
-      return
     } catch (error) {
-      console.error('[NerfTrainingsRouter][GET][listTrainings]', error)
+      this.logger.error('[GET][listTrainings]', error)
       ctx.status = 500
-
-      return
     }
+
+    this.logger.info('[GET][listTrainings]', ctx.status, ctx.state.auth!.apiKey)
+
+    return
   }
 }
