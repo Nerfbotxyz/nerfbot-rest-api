@@ -9,6 +9,10 @@ import {
 } from '~/app-services'
 
 const MAX_UPLOAD_SIZE_BYTES = 500000000 // 500mb
+const UPLOAD_CONTENT_TYPES = [
+  'multipart/form-data',
+  'application/x-www-form-urlencoded'
+]
 
 @injectable()
 export default class NerfUploadsRouter {
@@ -24,10 +28,16 @@ export default class NerfUploadsRouter {
   }
 
   private build() {
+    this.router.head('/', this.uploadHead.bind(this))
     this.router.post('/', this.upload.bind(this))
     this.router.get('/', this.listUploads.bind(this))
     this.router.get('/:uploadId', this.getUpload.bind(this))
     this.router.post('/:uploadId/process', this.processUpload.bind(this))
+  }
+
+  private async uploadHead(ctx: ParameterizedContext) {
+    ctx.set('Accept', UPLOAD_CONTENT_TYPES.join(', '))
+    ctx.status = 200
   }
 
   private async upload(ctx: ParameterizedContext) {
@@ -40,10 +50,21 @@ export default class NerfUploadsRouter {
 
       const contentLength = Number.parseInt(ctx.headers['content-length'])
       if (
-        Number.isInteger(contentLength)
-        && contentLength > MAX_UPLOAD_SIZE_BYTES
+        Number.isInteger(contentLength) && contentLength > MAX_UPLOAD_SIZE_BYTES
       ) {
         ctx.status = 413 // HTTP 413 Content Too Large
+
+        return
+      }
+
+      const isAcceptedContentType = UPLOAD_CONTENT_TYPES.some(
+        ct => ctx.headers['content-type']
+          && ctx.headers['content-type'].startsWith(ct)
+      )
+      if (!isAcceptedContentType) {
+        ctx.status = 415 // HTTP 415 Unsupported Media Type
+        ctx.body = `Unsupported Media Type`
+          + ` - use one of: ${UPLOAD_CONTENT_TYPES.join(', ')}`
 
         return
       }

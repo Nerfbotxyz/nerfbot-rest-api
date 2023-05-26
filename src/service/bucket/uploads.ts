@@ -19,31 +19,36 @@ export default class UploadsBucketService implements IBucketService {
 
   async upload(id: string, req: IncomingMessage) {
     return new Promise<string>(async (resolve, reject) => {
-      const bus = busboy({
-        headers: req.headers,
-        limits: { fileSize: 5e8 } // 500mb TODO -> configurable
-      })
-
-      bus.on('file', async (name, stream, { filename, mimeType }) => {
-        await this.adapter.upload({
-          Bucket: this.bucket,
-          Key: `${id}/${filename}`,
-          Body: stream,
-          ContentType: mimeType
+      try {
+        const bus = busboy({
+          headers: req.headers,
+          limits: { fileSize: 5e8 } // 500mb TODO -> configurable
         })
-      })
 
-      bus.once('close', () => {
-        bus.removeAllListeners()
-        resolve(id)
-      })
+        bus.on('file', async (name, stream, { filename, mimeType }) => {
+          await this.adapter.upload({
+            Bucket: this.bucket,
+            Key: `${id}/${filename}`,
+            Body: stream,
+            ContentType: mimeType
+          })
+        })
 
-      bus.once('error', (error) => {
-        bus.removeAllListeners()
+        bus.once('close', () => {
+          bus.removeAllListeners()
+          resolve(id)
+        })
+
+        bus.once('error', (error) => {
+          bus.removeAllListeners()
+          reject(error)
+        })
+
+        req.pipe(bus)
+      } catch (error) {
+        console.error('[UploadsBucketService][upload] busboy error', error)
         reject(error)
-      })
-
-      req.pipe(bus)
+      }
     })
   }
 }
