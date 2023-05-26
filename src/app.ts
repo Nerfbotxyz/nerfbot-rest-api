@@ -9,6 +9,7 @@ import { AuthState } from './interface/middleware'
 import { buildContainer, config } from './inversify.config'
 import { PostgresAdapter } from './infra/db/adapter'
 import { S3Adapter } from './infra/bucket/adapter'
+import Logger from './util/logger'
 
 export type State = Koa.DefaultState & {
   auth?: AuthState
@@ -26,6 +27,7 @@ export default class NerfbotRestApi {
   app: Koa = new Koa()
   private db!: PostgresAdapter
   private s3!: S3Adapter
+  private logger: Logger = new Logger('NerfbotRestApi')
 
   constructor() {
     this.build()
@@ -81,7 +83,7 @@ export default class NerfbotRestApi {
       await redisClient.connect()
       await redisClient.disconnect()
     } catch (error) {
-      console.error('Redis connection failed, see error below')
+      this.logger.error('Redis connection failed, see error below')
 
       throw error
     }
@@ -91,7 +93,7 @@ export default class NerfbotRestApi {
     try {
       await this.db.client.raw('SELECT 1')
     } catch (error) {
-      console.error('Postgres connection failed, see error below')
+      this.logger.error('Postgres connection failed, see error below')
 
       throw error
     }
@@ -105,7 +107,7 @@ export default class NerfbotRestApi {
         bucketKeys.map(key => this.s3.testConnection(config.s3[key]))
       )
     } catch (error) {
-      console.error('S3 connection failed, see error below')
+      this.logger.error('S3 connection failed, see error below')
 
       throw error
     }
@@ -117,7 +119,7 @@ export default class NerfbotRestApi {
         await this.testRedisAndThrowOnFailedConnection()
         await this.testPostgresAndThrowOnFailedConnection()
         await this.testBucketsAndThrowOnFailedConnection()
-        console.log(`Nerfbot REST API listening on port ${this.port}`)
+        this.logger.info(`Nerfbot REST API listening on port ${this.port}`)
       })
     }
   }
@@ -125,7 +127,7 @@ export default class NerfbotRestApi {
   async stop() {
     if (this.server) {
       return new Promise<void>(resolve => {
-        this.server.close(() => console.log('Nerfbot REST API stopped'))
+        this.server.close(() => this.logger.info('Nerfbot REST API stopped'))
         resolve()
       })
     }

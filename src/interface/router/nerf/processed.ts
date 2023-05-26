@@ -7,10 +7,12 @@ import {
   JobsAppService,
   ProcessedAppService
 } from '~/app-services'
+import Logger from '~/util/logger'
 
 @injectable()
 export default class NerfProcessedRouter {
   router: Router<State, Context> = new Router<State, Context>()
+  logger: Logger = new Logger('NerfProcessedRouter')
 
   constructor(
     @inject(APP_SERVICES.ProcessedAppService)
@@ -37,14 +39,20 @@ export default class NerfProcessedRouter {
 
       ctx.status = 200
       ctx.body = trainingJob
-
-      return
     } catch (error) {
-      console.error('[NerfProcessedRouter][POST][trainProcessed]', error)
+      this.logger.error('[POST][trainProcessed]', error)
       ctx.status = 500
-
-      return
     }
+
+    this.logger.info(
+      '[POST][trainProcessed]',
+      ctx.status,
+      ctx.state.auth!.userId,
+      ctx.state.auth!.apiKey,
+      ctx.params.processedId
+    )
+
+    return
   }
 
   private async getProcessed(ctx: ParameterizedContext) {
@@ -56,14 +64,19 @@ export default class NerfProcessedRouter {
 
       ctx.status = 200
       ctx.body = { processed }
-
-      return
     } catch (error) {
-      console.error('[NerfProcessedRouter][GET][getProcessed]', error)
+      this.logger.error('[GET][getProcessed]', error)
       ctx.status = 500
-
-      return
     }
+
+    this.logger.info(
+      '[GET][getProcessed]',
+      ctx.status,
+      ctx.state.auth!.apiKey,
+      ctx.params.processedId
+    )
+
+    return
   }
 
   private async listProcessed(ctx: ParameterizedContext) {
@@ -74,13 +87,13 @@ export default class NerfProcessedRouter {
 
       ctx.status = 200
       ctx.body = { processed }
-
-      return
     } catch (error) {
-      console.error('[NerfProcessedRouter][GET][listProcessed]', error)
+      this.logger.error('[GET][listProcessed]', error)
       ctx.status = 500
-
-      return
     }
+
+    this.logger.info('[GET][listProcessed]', ctx.status, ctx.state.auth!.apiKey)
+
+    return
   }
 }

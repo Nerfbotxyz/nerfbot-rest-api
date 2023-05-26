@@ -3,10 +3,12 @@ import { inject, injectable } from 'inversify'
 
 import { Context, ParameterizedContext, State } from '~/app'
 import { APP_SERVICES, RendersAppService } from '~/app-services'
+import Logger from '~/util/logger'
 
 @injectable()
 export default class NerfRendersRouter {
   router: Router<State, Context> = new Router<State, Context>()
+  logger: Logger = new Logger('NerfRendersRouter')
 
   constructor(
     @inject(APP_SERVICES.RendersAppService)
@@ -30,9 +32,11 @@ export default class NerfRendersRouter {
       ctx.status = 200
       ctx.body = { renders }
     } catch (error) {
-      console.error('[NerfRendersRouter][GET][listRenders]', error)
+      this.logger.error('[GET][listRenders]', error)
       ctx.status = 500
     }
+
+    this.logger.info('[GET][listRenders]', ctx.status, ctx.state.auth!.apiKey)
 
     return
   }
@@ -47,9 +51,16 @@ export default class NerfRendersRouter {
       ctx.status = 200
       ctx.body = { render }
     } catch (error) {
-      console.error('[NerfRendersRouter][GET][getRender]', error)
+      this.logger.error('[GET][getRender]', error)
       ctx.status = 500
     }
+
+    this.logger.info(
+      '[GET][getRender]',
+      ctx.status,
+      ctx.state.auth!.apiKey,
+      ctx.params.renderId
+    )
 
     return
   }
@@ -70,9 +81,16 @@ export default class NerfRendersRouter {
         ctx.status = 404
       }
     } catch (error) {
-      console.error('[NerfRendersRouter][GET][downloadRender]', error)
+      this.logger.error('[GET][downloadRender]', error)
       ctx.status = 500
     }
+
+    this.logger.info(
+      '[GET][downloadRender]',
+      ctx.status,
+      ctx.state.auth!.apiKey,
+      ctx.params.renderId
+    )
 
     return
   }
