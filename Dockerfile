@@ -12,6 +12,10 @@ ENV PORT=1987
 RUN npm run build
 
 HEALTHCHECK --interval=30s --timeout=5s \
-  CMD curl -f http://0.0.0.0:1987/healthcheck || exit 1
+  CMD wget \
+    --no-verbose \
+    --tries=1 \
+    --spider \
+    http://0.0.0.0:1987/healthcheck || exit 1
 
 ENTRYPOINT npm run start
