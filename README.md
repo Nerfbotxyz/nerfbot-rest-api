@@ -65,7 +65,7 @@ The status of these jobs can be fetched via `/nerf/jobs` endpoints with correspo
 When a job is complete, it will contain the corresponding output artifact's id in its `jobData`.
 For example, a completed export job's `jobData` will have both `trainingId` from its input and `exportId` from its output.
 
-1) Upload images or video as form data by POSTing to the `/nerf/uploads` endpoint
+1) Upload images or video as form data by POSTing to the `/nerf/uploads` endpoint as form data
 2) Process an upload by `uploadId` via `/nerf/uploads/:uploadId/process`, making sure to include `mediaType` in the query params (either `images` or `video`)
 3) Train on the processed upload artifact by its `processedId` via `/nerf/processed/:processedId/train`
 4) Render or Export the NeRF
@@ -96,7 +96,8 @@ More endpoints will be added as functionality is developed.
 
 ### User Uploads
 - `POST` `/nerf/uploads` - Post a new upload request, one or many files, as
-form data
+form data (**REQUIRED** `multipart/form-data` or `application/x-www-form-urlencoded`)
+  - Currently, there is a 500MB total upload size limit
 - `GET` `/nerf/uploads` - List your upload requests
 - `GET` `/nerf/uploads/:uploadId` - Get an upload by `uploadId`
 - `POST` `/nerf/uploads/:uploadId/process` - Post a new process job request to
