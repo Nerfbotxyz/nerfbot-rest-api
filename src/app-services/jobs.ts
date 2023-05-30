@@ -1,7 +1,12 @@
 import { inject, injectable } from 'inversify'
 import { JobQueue, QUEUES } from '~/service/queue'
 import { JobsRepository, REPOSITORIES } from '~/service/repository'
-import { APP_SERVICES, ExportsAppService, ProcessedAppService, TrainingsAppService, UploadsAppService } from './'
+import {
+  APP_SERVICES,
+  ProcessedAppService,
+  TrainingsAppService,
+  UploadsAppService
+} from './'
 
 export type NerfProcessDataInputType =
   | 'images'
