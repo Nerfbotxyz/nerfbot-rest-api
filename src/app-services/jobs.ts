@@ -7,6 +7,7 @@ import {
   TrainingsAppService,
   UploadsAppService
 } from './'
+import Logger from '~/util/logger'
 
 export type NerfProcessDataInputType =
   | 'images'
@@ -20,6 +21,8 @@ const ENABLED_MEDIA_TYPES: NerfProcessDataInputType[] = [ 'images', 'video' ]
 
 @injectable()
 export default class JobsAppService {
+  logger: Logger = new Logger('JobsAppService')
+
   constructor(
     @inject(QUEUES.JobQueue) private jobQueue: JobQueue,
     @inject(REPOSITORIES.JobsRepository)
@@ -38,10 +41,13 @@ export default class JobsAppService {
     uploadId: string,
     mediaType: string
   ) {
+    this.logger.info('createProcessJob', { apiKey, uploadId, mediaType })
     const upload = await this.uploadsAppService.get(apiKey, uploadId)
     if (!upload) { return null }
+    if (!ENABLED_MEDIA_TYPES.includes(mediaType as NerfProcessDataInputType)) {
+      return Error('Unsupported mediaType')
+    }
 
-    // TODO -> validate media type to NerfProcessDataInputType
     const job = await this.jobsRepository.create({
       userId,
       apiKey,

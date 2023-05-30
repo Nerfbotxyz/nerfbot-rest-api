@@ -181,8 +181,13 @@ export default class NerfUploadsRouter {
       )
 
       if (processJob) {
-        ctx.status = 200
-        ctx.body = processJob
+        if (processJob instanceof Error) {
+          ctx.status = 400
+          ctx.body = processJob.message
+        } else {
+          ctx.status = 200
+          ctx.body = processJob
+        }
       } else {
         ctx.status = 404
       }
