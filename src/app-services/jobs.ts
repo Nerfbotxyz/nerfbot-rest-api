@@ -1,6 +1,7 @@
 import { inject, injectable } from 'inversify'
 import { JobQueue, QUEUES } from '~/service/queue'
 import { JobsRepository, REPOSITORIES } from '~/service/repository'
+import { APP_SERVICES, ExportsAppService, ProcessedAppService, TrainingsAppService, UploadsAppService } from './'
 
 export type NerfProcessDataInputType =
   | 'images'
@@ -10,11 +11,20 @@ export type NerfProcessDataInputType =
   | 'realitycapture'
   | 'record3d'
 
+const ENABLED_MEDIA_TYPES: NerfProcessDataInputType[] = [ 'images', 'video' ]
+
 @injectable()
 export default class JobsAppService {
   constructor(
     @inject(QUEUES.JobQueue) private jobQueue: JobQueue,
-    @inject(REPOSITORIES.JobsRepository) private jobsRepository: JobsRepository
+    @inject(REPOSITORIES.JobsRepository)
+    private jobsRepository: JobsRepository,
+    @inject(APP_SERVICES.UploadsAppService)
+    private uploadsAppService: UploadsAppService,
+    @inject(APP_SERVICES.ProcessedAppService)
+    private processedAppService: ProcessedAppService,
+    @inject(APP_SERVICES.TrainingsAppService)
+    private trainingsAppService: TrainingsAppService
   ) {}
 
   async createProcessJob(
@@ -23,12 +33,15 @@ export default class JobsAppService {
     uploadId: string,
     mediaType: string
   ) {
+    const upload = await this.uploadsAppService.get(apiKey, uploadId)
+    if (!upload) { return null }
+
     // TODO -> validate media type to NerfProcessDataInputType
     const job = await this.jobsRepository.create({
       userId,
       apiKey,
       jobName: 'process',
-      jobData: { uploadId, mediaType }
+      jobData: { uploadId: upload.uploadId, mediaType }
     })
 
     await this.jobQueue.add(job)
@@ -41,8 +54,14 @@ export default class JobsAppService {
     apiKey: string,
     processedId: string
   ) {
+    const processed = await this.processedAppService.get(apiKey, processedId)
+    if (!processed) { return null }
+
     const job = await this.jobsRepository.create({
-      userId, apiKey, jobName: 'train', jobData: { processedId }
+      userId,
+      apiKey,
+      jobName: 'train',
+      jobData: { processedId: processed.processedId }
     })
 
     await this.jobQueue.add(job)
@@ -55,8 +74,14 @@ export default class JobsAppService {
     apiKey: string,
     trainingId: string
   ) {
+    const training = await this.trainingsAppService.get(apiKey, trainingId)
+    if (!training) { return null }
+
     const job = await this.jobsRepository.create({
-      userId, apiKey, jobName: 'render', jobData: { trainingId }
+      userId,
+      apiKey,
+      jobName: 'render',
+      jobData: { trainingId: training.trainingId }
     })
 
     await this.jobQueue.add(job)
@@ -69,8 +94,14 @@ export default class JobsAppService {
     apiKey: string,
     trainingId: string
   ) {
+    const training = await this.trainingsAppService.get(apiKey, trainingId)
+    if (!training) { return null }
+
     const job = await this.jobsRepository.create({
-      userId, apiKey, jobName: 'export', jobData: { trainingId }
+      userId,
+      apiKey,
+      jobName: 'export',
+      jobData: { trainingId: training.trainingId }
     })
 
     await this.jobQueue.add(job)

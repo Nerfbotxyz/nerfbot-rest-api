@@ -34,8 +34,12 @@ export default class NerfTrainingsRouter {
         ctx.params.trainingId
       )
 
-      ctx.status = 200
-      ctx.body = exportJob
+      if (exportJob) {
+        ctx.status = 200
+        ctx.body = exportJob
+      } else {
+        ctx.status = 404
+      }
     } catch (error) {
       this.logger.error('[POST][exportTraining]', error)
       ctx.status = 500
@@ -60,8 +64,12 @@ export default class NerfTrainingsRouter {
         ctx.params.trainingId
       )
 
-      ctx.status = 200
-      ctx.body = renderJob
+      if (renderJob) {
+        ctx.status = 200
+        ctx.body = renderJob
+      } else {
+        ctx.status = 404
+      }
     } catch (error) {
       this.logger.error('[POST][renderTraining]', error)
       ctx.status = 500
@@ -85,8 +93,12 @@ export default class NerfTrainingsRouter {
         ctx.params.trainingId
       )
 
-      ctx.status = 200
-      ctx.body = { training }
+      if (training) {
+        ctx.status = 200
+        ctx.body = { training }
+      } else {
+        ctx.status = 404
+      }
     } catch (error) {
       this.logger.error('[GET][getTraining]', error)
       ctx.status = 500
