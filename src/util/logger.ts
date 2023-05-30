@@ -6,18 +6,18 @@ export default class Logger {
   }
 
   log(...messages: any[]) {
-    this.info(messages)
+    this.info(...messages)
   }
 
   info(...messages: any[]) {
-    console.info('[INFO]', this.prepend, messages)
+    console.info('[INFO]', this.prepend, ...messages)
   }
 
   error(...messages: any[]) {
-    console.error('[ERROR]', this.prepend, messages)
+    console.error('[ERROR]', this.prepend, ...messages)
   }
 
   warn(...messages: any[]) {
-    console.warn('[WARN]', this.prepend, messages)
+    console.warn('[WARN]', this.prepend, ...messages)
   }
 }
