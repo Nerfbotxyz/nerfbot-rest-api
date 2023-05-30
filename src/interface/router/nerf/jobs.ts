@@ -43,13 +43,17 @@ export default class NerfJobsRouter implements IRouter<State, Context> {
 
   private async getJob(ctx: ParameterizedContext) {
     try {
-      const processRequest = await this.jobsAppService.get(
+      const job = await this.jobsAppService.get(
         ctx.state.auth!.apiKey,
         ctx.params.jobId
       )
 
-      ctx.status = 200
-      ctx.body = processRequest
+      if (job) {
+        ctx.status = 200
+        ctx.body = job
+      } else {
+        ctx.status = 404
+      }
     } catch (error) {
       this.logger.error('[GET][getJob]', error)
       ctx.status = 500

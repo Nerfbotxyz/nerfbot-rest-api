@@ -48,8 +48,12 @@ export default class NerfExportsRouter {
         ctx.params.exportId
       )
 
-      ctx.status = 200
-      ctx.body = { nerfExport }
+      if (nerfExport) {
+        ctx.status = 200
+        ctx.body = { nerfExport }
+      } else {
+        ctx.status = 404
+      }      
     } catch (error) {
       this.logger.error('[GET][getExport]', error)
       ctx.status = 500

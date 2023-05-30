@@ -37,8 +37,12 @@ export default class NerfProcessedRouter {
         ctx.params.processedId
       )
 
-      ctx.status = 200
-      ctx.body = trainingJob
+      if (trainingJob) {
+        ctx.status = 200
+        ctx.body = trainingJob
+      } else {
+        ctx.status = 404
+      }
     } catch (error) {
       this.logger.error('[POST][trainProcessed]', error)
       ctx.status = 500
@@ -62,8 +66,12 @@ export default class NerfProcessedRouter {
         ctx.params.processedId
       )
 
-      ctx.status = 200
-      ctx.body = { processed }
+      if (processed) {
+        ctx.status = 200
+        ctx.body = { processed }
+      } else {
+        ctx.status = 404
+      }      
     } catch (error) {
       this.logger.error('[GET][getProcessed]', error)
       ctx.status = 500

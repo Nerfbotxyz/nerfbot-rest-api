@@ -40,6 +40,8 @@ export default class NerfUploadsRouter {
   private async uploadHead(ctx: ParameterizedContext) {
     ctx.set('Accept', UPLOAD_CONTENT_TYPES.join(', '))
     ctx.status = 200
+
+    return
   }
 
   private async upload(ctx: ParameterizedContext) {
@@ -122,8 +124,12 @@ export default class NerfUploadsRouter {
         ctx.params.uploadId
       )
 
-      ctx.status = 200
-      ctx.body = { upload }
+      if (upload) {
+        ctx.status = 200
+        ctx.body = { upload }
+      } else {
+        ctx.status = 404
+      }
     } catch (error) {
       this.logger.error('[GET][getUpload]', error)
       ctx.status = 500
@@ -135,6 +141,8 @@ export default class NerfUploadsRouter {
       ctx.state.auth!.apiKey,
       ctx.params.uploadId
     )
+
+    return
   }
 
   private async listUploads(ctx: ParameterizedContext) {
@@ -172,8 +180,17 @@ export default class NerfUploadsRouter {
         mediaType || ''
       )
 
-      ctx.status = 200
-      ctx.body = processJob
+      if (processJob) {
+        if (processJob instanceof Error) {
+          ctx.status = 400
+          ctx.body = processJob.message
+        } else {
+          ctx.status = 200
+          ctx.body = processJob
+        }
+      } else {
+        ctx.status = 404
+      }
     } catch (error) {
       this.logger.error('[POST][process]', error)
       ctx.status = 500
@@ -187,5 +204,7 @@ export default class NerfUploadsRouter {
       ctx.params.uploadId,
       ctx.query.mediaType
     )
+
+    return
   }
 }

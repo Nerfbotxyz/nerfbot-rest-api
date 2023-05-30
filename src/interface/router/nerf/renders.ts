@@ -48,8 +48,12 @@ export default class NerfRendersRouter {
         ctx.params.renderId
       )
 
-      ctx.status = 200
-      ctx.body = { render }
+      if (render) {
+        ctx.status = 200
+        ctx.body = { render }
+      } else {
+        ctx.status = 404
+      }      
     } catch (error) {
       this.logger.error('[GET][getRender]', error)
       ctx.status = 500
