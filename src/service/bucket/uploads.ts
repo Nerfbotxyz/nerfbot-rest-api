@@ -21,6 +21,8 @@ export default class UploadsBucketService implements IBucketService {
 
   async upload(id: string, req: IncomingMessage) {
     return new Promise<string>(async (resolve, reject) => {
+      const uploadStreams: Promise<void>[] = []
+
       try {
         const bus = busboy({
           headers: req.headers,
@@ -28,16 +30,19 @@ export default class UploadsBucketService implements IBucketService {
         })
 
         bus.on('file', async (name, stream, { filename, mimeType }) => {
-          await this.adapter.upload({
-            Bucket: this.bucket,
-            Key: `${id}/${filename}`,
-            Body: stream,
-            ContentType: mimeType
-          })
+          uploadStreams.push(
+            this.adapter.upload({
+              Bucket: this.bucket,
+              Key: `${id}/${filename}`,
+              Body: stream,
+              ContentType: mimeType
+            })
+          )
         })
 
-        bus.once('close', () => {
+        bus.once('close', async () => {
           bus.removeAllListeners()
+          await Promise.all(uploadStreams)
           resolve(id)
         })
 
