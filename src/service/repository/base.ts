@@ -22,6 +22,8 @@ export default class BaseRepository<T extends {}> implements IRepository<T> {
       query = query.where(thing)
     }
 
+    query.orderBy('created_at', 'desc')
+
     return await query.select<T>()
   }
 
