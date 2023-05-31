@@ -138,8 +138,8 @@ export default class NerfbotRestApi {
     if (this.server) {
       return new Promise<void>(resolve => {
         this.server.close(async () => {
-          this.logger.info('Nerfbot REST API stopped')
           await this.callbacksQueue.stop()
+          this.logger.info('Nerfbot REST API stopped')
           resolve()
         })
       })
