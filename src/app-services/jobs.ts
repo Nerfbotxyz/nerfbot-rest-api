@@ -1,5 +1,6 @@
 import { inject, injectable } from 'inversify'
-import { JobQueue, QUEUES } from '~/service/queue'
+
+import { JobsQueue, QUEUES } from '~/service/queue'
 import { JobsRepository, REPOSITORIES } from '~/service/repository'
 import {
   APP_SERVICES,
@@ -19,12 +20,14 @@ export type NerfProcessDataInputType =
 
 const ENABLED_MEDIA_TYPES: NerfProcessDataInputType[] = [ 'images', 'video' ]
 
+export const CALLBACKS_EMPTY = 'callbacks-empty'
+
 @injectable()
 export default class JobsAppService {
-  logger: Logger = new Logger('JobsAppService')
+  private logger: Logger = new Logger('JobsAppService')
 
   constructor(
-    @inject(QUEUES.JobQueue) private jobQueue: JobQueue,
+    @inject(QUEUES.JobsQueue) private jobQueue: JobsQueue,
     @inject(REPOSITORIES.JobsRepository)
     private jobsRepository: JobsRepository,
     @inject(APP_SERVICES.UploadsAppService)
@@ -39,20 +42,30 @@ export default class JobsAppService {
     userId: number,
     apiKey: string,
     uploadId: string,
-    mediaType: string
+    mediaType: string,
+    callbackURL?: string
   ) {
-    this.logger.info('createProcessJob', { apiKey, uploadId, mediaType })
+    this.logger.info(
+      'createProcessJob',
+      { apiKey, uploadId, mediaType, callbackURL }
+    )
     const upload = await this.uploadsAppService.get(apiKey, uploadId)
     if (!upload) { return null }
     if (!ENABLED_MEDIA_TYPES.includes(mediaType as NerfProcessDataInputType)) {
       return Error('Unsupported mediaType')
     }
 
+    const jobData: any = { uploadId: upload.uploadId, mediaType }
+
+    if (callbackURL) {
+      jobData.callbackURL = callbackURL
+    }
+
     const job = await this.jobsRepository.create({
       userId,
       apiKey,
       jobName: 'process',
-      jobData: { uploadId: upload.uploadId, mediaType }
+      jobData
     })
 
     await this.jobQueue.add(job)

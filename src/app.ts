@@ -3,6 +3,7 @@ import { Server } from 'http'
 import Koa from 'koa'
 import Router from '@koa/router'
 import { createClient } from 'redis'
+import bodyParser from 'koa-bodyparser'
 
 import { IRouter, ROUTERS } from './interface/router'
 import { AuthState } from './interface/middleware'
@@ -10,6 +11,9 @@ import { buildContainer, config } from './inversify.config'
 import { PostgresAdapter } from './infra/db/adapter'
 import { S3Adapter } from './infra/bucket/adapter'
 import Logger from './util/logger'
+import { APP_SERVICES, JobsAppService } from './app-services'
+import CallbacksQueue from './service/queue/callbacks'
+import { QUEUES } from './service/queue'
 
 export type State = Koa.DefaultState & {
   auth?: AuthState
@@ -28,6 +32,7 @@ export default class NerfbotRestApi {
   private db!: PostgresAdapter
   private s3!: S3Adapter
   private logger: Logger = new Logger('NerfbotRestApi')
+  private callbacksQueue!: CallbacksQueue
 
   constructor() {
     this.build()
@@ -38,6 +43,7 @@ export default class NerfbotRestApi {
 
     this.db = container.get<PostgresAdapter>('PostgresAdapter')
     this.s3 = container.get<S3Adapter>('S3Adapter')
+    this.callbacksQueue = container.get<CallbacksQueue>(QUEUES.CallbacksQueue)
 
     const router = new Router()
     const routers: { path: string, id: symbol }[] = [
@@ -65,6 +71,9 @@ export default class NerfbotRestApi {
         ctx.set('Access-Control-Allow-Origin', '*')
         await next()
       })
+      .use(bodyParser({
+        formLimit: '500mb'
+      }))
       .use(router.routes())
       .use(router.allowedMethods())
       .use(async (ctx) => {
@@ -119,6 +128,7 @@ export default class NerfbotRestApi {
         await this.testRedisAndThrowOnFailedConnection()
         await this.testPostgresAndThrowOnFailedConnection()
         await this.testBucketsAndThrowOnFailedConnection()
+        this.callbacksQueue.start()
         this.logger.info(`Nerfbot REST API listening on port ${this.port}`)
       })
     }
@@ -127,8 +137,11 @@ export default class NerfbotRestApi {
   async stop() {
     if (this.server) {
       return new Promise<void>(resolve => {
-        this.server.close(() => this.logger.info('Nerfbot REST API stopped'))
-        resolve()
+        this.server.close(async () => {
+          this.logger.info('Nerfbot REST API stopped')
+          await this.callbacksQueue.stop()
+          resolve()
+        })
       })
     }
   }

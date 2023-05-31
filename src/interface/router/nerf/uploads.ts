@@ -173,11 +173,14 @@ export default class NerfUploadsRouter {
         ? ctx.query.mediaType[0]
         : ctx.query.mediaType
 
+      const { callbackURL } = ctx.request.body as any
+
       const processJob = await this.jobsAppService.createProcessJob(
         ctx.state.auth!.userId,
         ctx.state.auth!.apiKey,
         ctx.params.uploadId,
-        mediaType || ''
+        mediaType || '',
+        callbackURL
       )
 
       if (processJob) {
