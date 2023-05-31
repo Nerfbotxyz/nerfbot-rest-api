@@ -28,10 +28,13 @@ export default class NerfTrainingsRouter {
 
   private async exportTraining(ctx: ParameterizedContext) {
     try {
+      const { callbackURL } = ctx.request.body as any
+
       const exportJob = await this.jobsAppService.createExportJob(
         ctx.state.auth!.userId,
         ctx.state.auth!.apiKey,
-        ctx.params.trainingId
+        ctx.params.trainingId,
+        callbackURL
       )
 
       if (exportJob) {
@@ -58,10 +61,13 @@ export default class NerfTrainingsRouter {
 
   private async renderTraining(ctx: ParameterizedContext) {
     try {
+      const { callbackURL } = ctx.request.body as any
+
       const renderJob = await this.jobsAppService.createRenderJob(
         ctx.state.auth!.userId,
         ctx.state.auth!.apiKey,
-        ctx.params.trainingId
+        ctx.params.trainingId,
+        callbackURL
       )
 
       if (renderJob) {

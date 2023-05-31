@@ -20,8 +20,6 @@ export type NerfProcessDataInputType =
 
 const ENABLED_MEDIA_TYPES: NerfProcessDataInputType[] = [ 'images', 'video' ]
 
-export const CALLBACKS_EMPTY = 'callbacks-empty'
-
 @injectable()
 export default class JobsAppService {
   private logger: Logger = new Logger('JobsAppService')
@@ -76,16 +74,23 @@ export default class JobsAppService {
   async createTrainingJob(
     userId: number,
     apiKey: string,
-    processedId: string
+    processedId: string,
+    callbackURL?: string
   ) {
     const processed = await this.processedAppService.get(apiKey, processedId)
     if (!processed) { return null }
+
+    const jobData: any = { processedId: processed.processedId }
+
+    if (callbackURL) {
+      jobData.callbackURL = callbackURL
+    }
 
     const job = await this.jobsRepository.create({
       userId,
       apiKey,
       jobName: 'train',
-      jobData: { processedId: processed.processedId }
+      jobData
     })
 
     await this.jobQueue.add(job)
@@ -96,16 +101,23 @@ export default class JobsAppService {
   async createRenderJob(
     userId: number,
     apiKey: string,
-    trainingId: string
+    trainingId: string,
+    callbackURL?: string
   ) {
     const training = await this.trainingsAppService.get(apiKey, trainingId)
     if (!training) { return null }
+
+    const jobData: any = { trainingId: training.trainingId }
+
+    if (callbackURL) {
+      jobData.callbackURL = callbackURL
+    }
 
     const job = await this.jobsRepository.create({
       userId,
       apiKey,
       jobName: 'render',
-      jobData: { trainingId: training.trainingId }
+      jobData
     })
 
     await this.jobQueue.add(job)
@@ -116,16 +128,23 @@ export default class JobsAppService {
   async createExportJob(
     userId: number,
     apiKey: string,
-    trainingId: string
+    trainingId: string,
+    callbackURL?: string
   ) {
     const training = await this.trainingsAppService.get(apiKey, trainingId)
     if (!training) { return null }
+
+    const jobData: any = { trainingId: training.trainingId }
+
+    if (callbackURL) {
+      jobData.callbackURL = callbackURL
+    }
 
     const job = await this.jobsRepository.create({
       userId,
       apiKey,
       jobName: 'export',
-      jobData: { trainingId: training.trainingId }
+      jobData
     })
 
     await this.jobQueue.add(job)
