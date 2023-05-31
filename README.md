@@ -103,17 +103,46 @@ form data (**REQUIRED** `multipart/form-data` or `application/x-www-form-urlenco
 - `POST` `/nerf/uploads/:uploadId/process` - Post a new process job request to
 prep an upload for training
   - `?mediaType` **REQUIRED** - either `video` or `images` depending on the type of the user upload artifact
+  - Body (optional) (`application/json`)
+
+    Including a `callbackURL` in the body of the request will have the REST API
+    `POST` the job result to the provided URL.
+    ```json
+    { "callbackURL": "http://myserver.com" }
+    ```
 
 ### Processed User Uploads
 - `GET` `/nerf/processed` - List your processed upload artifacts
 - `GET` `/nerf/processed/:processedId` - Get (info about) a processed upload artifact by `processedId`
 - `POST` `/nerf/processed/:processedId/train` - Start training on a processed upload artifact
+  - Body (optional) (`application/json`)
+
+    Including a `callbackURL` in the body of the request will have the REST API
+    `POST` the job result to the provided URL.
+    ```json
+    { "callbackURL": "http://myserver.com" }
+    ```
 
 ### NeRF Training Artifacts
 - `GET` `/nerf/trainings` - List your NeRF training artifacts
 - `GET` `/nerf/trainings/:trainingId` - Get (info about) a NeRF training artfact by `trainingId`
 - `POST` `/nerf/trainings/:trainingId/render` - Render a video of a NeRF training artifact
+  - Body (optional) (`application/json`)
+
+    Including a `callbackURL` in the body of the request will have the REST API
+    `POST` the job result to the provided URL.
+    ```json
+    { "callbackURL": "http://myserver.com" }
+    ```
+
 - `POST` `/nerf/trainings/:trainingId/export` - Export geometry of a NeRF training artifact
+  - Body (optional) (`application/json`)
+
+    Including a `callbackURL` in the body of the request will have the REST API
+    `POST` the job result to the provided URL.
+    ```json
+    { "callbackURL": "http://myserver.com" }
+    ```
 
 ### Render Artifacts
 - `GET` `/nerf/renders` - List your renders

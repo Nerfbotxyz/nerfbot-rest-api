@@ -1,5 +1,6 @@
 import { inject, injectable } from 'inversify'
-import { JobQueue, QUEUES } from '~/service/queue'
+
+import { JobsQueue, QUEUES } from '~/service/queue'
 import { JobsRepository, REPOSITORIES } from '~/service/repository'
 import {
   APP_SERVICES,
@@ -21,10 +22,10 @@ const ENABLED_MEDIA_TYPES: NerfProcessDataInputType[] = [ 'images', 'video' ]
 
 @injectable()
 export default class JobsAppService {
-  logger: Logger = new Logger('JobsAppService')
+  private logger: Logger = new Logger('JobsAppService')
 
   constructor(
-    @inject(QUEUES.JobQueue) private jobQueue: JobQueue,
+    @inject(QUEUES.JobsQueue) private jobQueue: JobsQueue,
     @inject(REPOSITORIES.JobsRepository)
     private jobsRepository: JobsRepository,
     @inject(APP_SERVICES.UploadsAppService)
@@ -39,20 +40,30 @@ export default class JobsAppService {
     userId: number,
     apiKey: string,
     uploadId: string,
-    mediaType: string
+    mediaType: string,
+    callbackURL?: string
   ) {
-    this.logger.info('createProcessJob', { apiKey, uploadId, mediaType })
+    this.logger.info(
+      'createProcessJob',
+      { apiKey, uploadId, mediaType, callbackURL }
+    )
     const upload = await this.uploadsAppService.get(apiKey, uploadId)
     if (!upload) { return null }
     if (!ENABLED_MEDIA_TYPES.includes(mediaType as NerfProcessDataInputType)) {
       return Error('Unsupported mediaType')
     }
 
+    const jobData: any = { uploadId: upload.uploadId, mediaType }
+
+    if (callbackURL) {
+      jobData.callbackURL = callbackURL
+    }
+
     const job = await this.jobsRepository.create({
       userId,
       apiKey,
       jobName: 'process',
-      jobData: { uploadId: upload.uploadId, mediaType }
+      jobData
     })
 
     await this.jobQueue.add(job)
@@ -63,16 +74,27 @@ export default class JobsAppService {
   async createTrainingJob(
     userId: number,
     apiKey: string,
-    processedId: string
+    processedId: string,
+    callbackURL?: string
   ) {
+    this.logger.info(
+      'createTrainingJob',
+      { apiKey, processedId, callbackURL }
+    )
     const processed = await this.processedAppService.get(apiKey, processedId)
     if (!processed) { return null }
+
+    const jobData: any = { processedId: processed.processedId }
+
+    if (callbackURL) {
+      jobData.callbackURL = callbackURL
+    }
 
     const job = await this.jobsRepository.create({
       userId,
       apiKey,
       jobName: 'train',
-      jobData: { processedId: processed.processedId }
+      jobData
     })
 
     await this.jobQueue.add(job)
@@ -83,16 +105,27 @@ export default class JobsAppService {
   async createRenderJob(
     userId: number,
     apiKey: string,
-    trainingId: string
+    trainingId: string,
+    callbackURL?: string
   ) {
+    this.logger.info(
+      'createRenderJob',
+      { apiKey, trainingId, callbackURL }
+    )
     const training = await this.trainingsAppService.get(apiKey, trainingId)
     if (!training) { return null }
+
+    const jobData: any = { trainingId: training.trainingId }
+
+    if (callbackURL) {
+      jobData.callbackURL = callbackURL
+    }
 
     const job = await this.jobsRepository.create({
       userId,
       apiKey,
       jobName: 'render',
-      jobData: { trainingId: training.trainingId }
+      jobData
     })
 
     await this.jobQueue.add(job)
@@ -103,16 +136,27 @@ export default class JobsAppService {
   async createExportJob(
     userId: number,
     apiKey: string,
-    trainingId: string
+    trainingId: string,
+    callbackURL?: string
   ) {
+    this.logger.info(
+      'createExportJob',
+      { apiKey, trainingId, callbackURL }
+    )
     const training = await this.trainingsAppService.get(apiKey, trainingId)
     if (!training) { return null }
+
+    const jobData: any = { trainingId: training.trainingId }
+
+    if (callbackURL) {
+      jobData.callbackURL = callbackURL
+    }
 
     const job = await this.jobsRepository.create({
       userId,
       apiKey,
       jobName: 'export',
-      jobData: { trainingId: training.trainingId }
+      jobData
     })
 
     await this.jobQueue.add(job)

@@ -33,7 +33,7 @@ import {
   User,
   UsersRepository
 } from './service/repository'
-import { Job } from './core'
+import { CallbackJob, Job } from './core'
 import {
   APP_SERVICES,
   ExportsAppService,
@@ -45,10 +45,16 @@ import {
   UploadsAppService
 } from './app-services'
 import { BUCKETS, IBucketService, UploadsBucket } from './service/bucket'
-import { IQueueService, JobQueue, QUEUES } from './service/queue'
+import {
+  CallbacksQueue,
+  IQueueService,
+  JobsQueue,
+  QUEUES
+} from './service/queue'
 import NerfProcessedRouter from './interface/router/nerf/processed'
 import NerfRendersRouter from './interface/router/nerf/renders'
 import NerfExportsRouter from './interface/router/nerf/exports'
+import { CallbacksProcessor, JobProcessor, PROCESSORS } from './processors'
 
 const user = process.env.DB_USER || 'DB_USER not set!'
 const pass = process.env.DB_PASS || 'DB_PASS not set!'
@@ -94,7 +100,14 @@ export const buildContainer = (): Container => {
   /**
    * Services - Queues
    */
-  container.bind<IQueueService>(QUEUES.JobQueue).to(JobQueue)
+  container
+    .bind<IQueueService>(QUEUES.JobsQueue)
+    .to(JobsQueue)
+    .inSingletonScope()
+  container
+    .bind<IQueueService>(QUEUES.CallbacksQueue)
+    .to(CallbacksQueue)
+    .inSingletonScope()
 
   /**
    * Services - Repositories
@@ -106,7 +119,7 @@ export const buildContainer = (): Container => {
     .bind<IRepository<NerfExport>>(REPOSITORIES.ExportsRepository)
     .to(ExportsRepository)
   container
-    .bind<IRepository<Job>>(REPOSITORIES.JobsRepository)
+    .bind<IRepository<Job<any>>>(REPOSITORIES.JobsRepository)
     .to(JobsRepository)
   container
     .bind<IRepository<Processed>>(REPOSITORIES.ProcessedRepository)
@@ -133,6 +146,7 @@ export const buildContainer = (): Container => {
   container
     .bind<IAppService>(APP_SERVICES.JobsAppService)
     .to(JobsAppService)
+    .inSingletonScope()
   container
     .bind<IAppService>(APP_SERVICES.ProcessedAppService)
     .to(ProcessedAppService)
@@ -145,6 +159,13 @@ export const buildContainer = (): Container => {
   container
     .bind<IAppService>(APP_SERVICES.ExportsAppService)
     .to(ExportsAppService)
+
+  /**
+   * Processors
+   */
+  container
+    .bind<JobProcessor<CallbackJob<any>>>(PROCESSORS.CallbacksProcessor)
+    .toFunction(CallbacksProcessor)
 
   /**
    * Routers
