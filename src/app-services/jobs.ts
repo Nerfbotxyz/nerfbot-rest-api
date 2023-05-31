@@ -77,6 +77,10 @@ export default class JobsAppService {
     processedId: string,
     callbackURL?: string
   ) {
+    this.logger.info(
+      'createTrainingJob',
+      { apiKey, processedId, callbackURL }
+    )
     const processed = await this.processedAppService.get(apiKey, processedId)
     if (!processed) { return null }
 
@@ -104,6 +108,10 @@ export default class JobsAppService {
     trainingId: string,
     callbackURL?: string
   ) {
+    this.logger.info(
+      'createRenderJob',
+      { apiKey, trainingId, callbackURL }
+    )
     const training = await this.trainingsAppService.get(apiKey, trainingId)
     if (!training) { return null }
 
@@ -131,6 +139,10 @@ export default class JobsAppService {
     trainingId: string,
     callbackURL?: string
   ) {
+    this.logger.info(
+      'createExportJob',
+      { apiKey, trainingId, callbackURL }
+    )
     const training = await this.trainingsAppService.get(apiKey, trainingId)
     if (!training) { return null }
 
