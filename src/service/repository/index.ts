@@ -8,6 +8,7 @@ export const REPOSITORIES = {
   JobsRepository: Symbol.for('JobsRepository'),
   ProcessedRepository: Symbol.for('ProcessedRepository'),
   RendersRepository: Symbol.for('RendersRepository'),
+  RolesRepository: Symbol.for('RolesRepository'),
   TrainingsRepository: Symbol.for('TrainingsRepository'),
   UploadsRepository: Symbol.for('UploadsRepository'),
   UsersRepository: Symbol.for('UsersRepository')
@@ -23,6 +24,8 @@ export { default as ProcessedRepository } from './processed'
 export * from './processed'
 export { default as RendersRepository } from './renders'
 export * from './renders'
+export { default as RolesRepository } from './roles'
+export * from './roles'
 export { default as TrainingsRepository } from './trainings'
 export * from './trainings'
 export { default as UploadsRepository } from './uploads'

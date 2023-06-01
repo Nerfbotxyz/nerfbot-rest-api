@@ -26,6 +26,8 @@ import {
   REPOSITORIES,
   Render,
   RendersRepository,
+  Role,
+  RolesRepository,
   Training,
   TrainingsRepository,
   Upload,
@@ -36,6 +38,7 @@ import {
 import { CallbackJob, Job } from './core'
 import {
   APP_SERVICES,
+  AuthAppService,
   ExportsAppService,
   IAppService,
   JobsAppService,
@@ -55,6 +58,7 @@ import NerfProcessedRouter from './interface/router/nerf/processed'
 import NerfRendersRouter from './interface/router/nerf/renders'
 import NerfExportsRouter from './interface/router/nerf/exports'
 import { CallbacksProcessor, JobProcessor, PROCESSORS } from './processors'
+import { ApiKeyMiddleware, MIDDLEWARES, requireApiToken } from './interface/middleware'
 
 const user = process.env.DB_USER || 'DB_USER not set!'
 const pass = process.env.DB_PASS || 'DB_PASS not set!'
@@ -128,6 +132,9 @@ export const buildContainer = (): Container => {
     .bind<IRepository<Render>>(REPOSITORIES.RendersRepository)
     .to(RendersRepository)
   container
+    .bind<IRepository<Role>>(REPOSITORIES.RolesRepository)
+    .to(RolesRepository)
+  container
     .bind<IRepository<Training>>(REPOSITORIES.TrainingsRepository)
     .to(TrainingsRepository)
   container
@@ -159,6 +166,9 @@ export const buildContainer = (): Container => {
   container
     .bind<IAppService>(APP_SERVICES.ExportsAppService)
     .to(ExportsAppService)
+  container
+    .bind<IAppService>(APP_SERVICES.AuthAppService)
+    .to(AuthAppService)
 
   /**
    * Processors
@@ -166,6 +176,13 @@ export const buildContainer = (): Container => {
   container
     .bind<JobProcessor<CallbackJob<any>>>(PROCESSORS.CallbacksProcessor)
     .toFunction(CallbacksProcessor)
+
+  /**
+   * Middleware
+   */
+  container
+    .bind<ApiKeyMiddleware>(MIDDLEWARES.ApiKeyMiddleware)
+    .toFunction(requireApiToken)
 
   /**
    * Routers
