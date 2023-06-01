@@ -3,7 +3,7 @@ import { inject, injectable } from 'inversify'
 
 import { Context, State } from '~/app'
 import { ApiKeysRepository, REPOSITORIES } from '~/service/repository'
-import { requireApiToken } from '~/interface/middleware'
+import { ApiKeyMiddleware, MIDDLEWARES } from '~/interface/middleware'
 import NerfUploadsRouter from './uploads'
 import NerfJobsRouter from './jobs'
 import { NerfTrainingsRouter, ROUTERS } from '../'
@@ -21,6 +21,8 @@ export default class NerfRouter {
 
   constructor(
     @inject(REPOSITORIES.ApiKeysRepository) private apiKeys: ApiKeysRepository,
+    @inject(MIDDLEWARES.ApiKeyMiddleware)
+    private requireApiToken: ApiKeyMiddleware,
     @inject(ROUTERS.NerfJobsRouter) private jobsRouter: NerfJobsRouter,
     @inject(ROUTERS.NerfUploadsRouter) private uploadsRouter: NerfUploadsRouter,
     @inject(ROUTERS.NerfProcessedRouter)
@@ -36,7 +38,7 @@ export default class NerfRouter {
   }
 
   private build() {
-    this.router.use(requireApiToken(this.apiKeys))
+    this.router.use(this.requireApiToken(this.apiKeys))
     this.router.use(
       '/uploads',
       this.uploadsRouter.router.routes(),

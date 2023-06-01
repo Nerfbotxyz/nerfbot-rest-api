@@ -1,7 +1,21 @@
 import { ParameterizedContext } from '~/app'
-import { ApiKeysRepository, UsersRepository } from '~/service/repository'
+import { ApiKeysRepository } from '~/service/repository'
 
-export default (apiKeys: ApiKeysRepository) => async (
+export interface AuthState {
+  userId: number
+  apiKey: string
+}
+
+export type ApiKeyMiddleware = (
+  apiKeys: ApiKeysRepository
+) => (
+  ctx: ParameterizedContext,
+  next: () => Promise<any>
+) => Promise<void>
+
+export default (
+  apiKeys: ApiKeysRepository
+) => async (
   ctx: ParameterizedContext,
   next: () => Promise<any>
 ) => {

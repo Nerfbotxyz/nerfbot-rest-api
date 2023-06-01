@@ -1,6 +1,6 @@
 export { default as requireApiToken } from './api-key'
+export * from './api-key'
 
-export interface AuthState {
-  userId: number
-  apiKey: string
+export const MIDDLEWARES = {
+  ApiKeyMiddleware: Symbol.for('ApiKeyMiddleware')
 }

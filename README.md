@@ -90,6 +90,17 @@ More endpoints will be added as functionality is developed.
 ### General / Info
 - `GET` `/healthcheck` - API Healthcheck, returns `200 OK`
 
+### Auth
+- `GET` `/auth/api-keys` - List your API keys
+- `POST` `/auth/api-keys` - Create a new API key (if you have `CREATE_API_KEY` role)
+  - Body (optional) (`application/json`)
+
+    You can optionally include a body with the request to assign a label to the new api key
+    ```json
+    { "label": "my-api-key-label" }
+    ```
+    
+
 ### Jobs
 - `GET` `/nerf/jobs` - List your job requests
 - `GET` `/nerf/jobs/:jobId` - Get a job request by ID
