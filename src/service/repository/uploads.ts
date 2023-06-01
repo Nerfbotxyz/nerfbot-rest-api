@@ -1,11 +1,13 @@
 import { injectable } from 'inversify'
 
+import { NsProcessMediaType } from '~/core'
 import BaseRepository from './base'
 
 export interface Upload {
   userId: number
   apiKey: string
   uploadId: string
+  mediaType: NsProcessMediaType
 }
 
 @injectable()

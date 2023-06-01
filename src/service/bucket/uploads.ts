@@ -1,11 +1,13 @@
 import { IncomingMessage } from 'http'
 import busboy from 'busboy'
 import { inject, injectable } from 'inversify'
+import mime from 'mime'
 
 import { S3Adapter } from '~/infra/bucket/adapter'
 import { AppConfig } from '~/inversify.config'
 import { IBucketService } from './'
 import Logger from '~/util/logger'
+import { NsProcessMediaType } from '~/core'
 
 @injectable()
 export default class UploadsBucketService implements IBucketService {
@@ -20,8 +22,9 @@ export default class UploadsBucketService implements IBucketService {
   }
 
   async upload(id: string, req: IncomingMessage) {
-    return new Promise<string>(async (resolve, reject) => {
+    return new Promise<NsProcessMediaType>(async (resolve, reject) => {
       const uploadStreams: Promise<void>[] = []
+      const mimeTypes: string[] = []
 
       try {
         const bus = busboy({
@@ -29,7 +32,9 @@ export default class UploadsBucketService implements IBucketService {
           limits: { fileSize: 5e8 } // 500mb TODO -> configurable
         })
 
-        bus.on('file', async (name, stream, { filename, mimeType }) => {
+        bus.on('file', async (name, stream, { filename }) => {
+          const mimeType = mime.getType(filename) || 'application/octet-stream'
+          mimeTypes.push(mimeType)
           uploadStreams.push(
             this.adapter.upload({
               Bucket: this.bucket,
@@ -43,7 +48,20 @@ export default class UploadsBucketService implements IBucketService {
         bus.once('close', async () => {
           bus.removeAllListeners()
           await Promise.all(uploadStreams)
-          resolve(id)
+
+          if (mimeTypes.length < 1) {
+            reject(new Error('No files'))
+          } else {
+            this.logger.info('Got mime types', mimeTypes)
+
+            // NB: for now, we only support video and images media types
+            const videoOrImage = mimeTypes[0].split('/')[0]  
+            const mediaType: NsProcessMediaType = videoOrImage === 'image'
+              ? 'images'
+              : 'video'
+  
+            resolve(mediaType)
+          }
         })
 
         bus.once('error', (error) => {

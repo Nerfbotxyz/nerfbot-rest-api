@@ -21,8 +21,8 @@ export default class UploadsAppService implements IAppService {
   ): Promise<string> {
     const uploadId = uuidv4()
 
-    await this.uploadsBucket.upload(uploadId, req)
-    await this.uploadsRepository.create({ userId, apiKey, uploadId })
+    const mediaType = await this.uploadsBucket.upload(uploadId, req)
+    await this.uploadsRepository.create({ userId, apiKey, uploadId, mediaType })
 
     return uploadId
   }
