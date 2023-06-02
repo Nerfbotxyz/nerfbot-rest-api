@@ -40,20 +40,16 @@ export default class JobsAppService {
     userId: number,
     apiKey: string,
     uploadId: string,
-    mediaType: string,
     callbackURL?: string
   ) {
-    this.logger.info(
-      'createProcessJob',
-      { apiKey, uploadId, mediaType, callbackURL }
-    )
+    this.logger.info('createProcessJob', { apiKey, uploadId, callbackURL })
     const upload = await this.uploadsAppService.get(apiKey, uploadId)
     if (!upload) { return null }
-    if (!ENABLED_MEDIA_TYPES.includes(mediaType as NerfProcessDataInputType)) {
-      return Error('Unsupported mediaType')
-    }
 
-    const jobData: any = { uploadId: upload.uploadId, mediaType }
+    const jobData: any = {
+      uploadId: upload.uploadId,
+      mediaType: upload.mediaType
+    }
 
     if (callbackURL) {
       jobData.callbackURL = callbackURL
