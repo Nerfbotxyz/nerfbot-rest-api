@@ -66,7 +66,7 @@ When a job is complete, it will contain the corresponding output artifact's id i
 For example, a completed export job's `jobData` will have both `trainingId` from its input and `exportId` from its output.
 
 1) Upload images or video as form data by POSTing to the `/nerf/uploads` endpoint as form data
-2) Process an upload by `uploadId` via `/nerf/uploads/:uploadId/process`, making sure to include `mediaType` in the query params (either `images` or `video`)
+2) Process an upload by `uploadId` via `/nerf/uploads/:uploadId/process`
 3) Train on the processed upload artifact by its `processedId` via `/nerf/processed/:processedId/train`
 4) Render or Export the NeRF
   - Render a video of the trained artifact by its `trainingId` via `/nerf/trainings/:trainingId/render`
@@ -113,7 +113,6 @@ form data (**REQUIRED** `multipart/form-data` or `application/x-www-form-urlenco
 - `GET` `/nerf/uploads/:uploadId` - Get an upload by `uploadId`
 - `POST` `/nerf/uploads/:uploadId/process` - Post a new process job request to
 prep an upload for training
-  - `?mediaType` **REQUIRED** - either `video` or `images` depending on the type of the user upload artifact
   - Body (optional) (`application/json`)
 
     Including a `callbackURL` in the body of the request will have the REST API
