@@ -10,7 +10,7 @@ env:
   IMAGE_NAME: nerfbot-rest-api
 
 jobs:
-  push:
+  publish-image:
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -43,6 +43,7 @@ jobs:
 
   deploy-release:
     if: github.event_name == 'release' && github.event.action == 'published'
+    needs: publish-image
     runs-on: ubuntu-latest
     permissions:
       packages: write
