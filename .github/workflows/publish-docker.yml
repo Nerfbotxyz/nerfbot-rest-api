@@ -52,6 +52,7 @@ jobs:
     
     steps:
       - name: Configure AWS credentials
+        if: configure-aws-creds
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.REST_API_DEPLOYER_ACCESS_KEY }}
@@ -59,21 +60,30 @@ jobs:
           aws-region: us-east-2
     
       - name: Download task definition
+        id: download-task-def
         run: |
           aws ecs describe-task-definition --task-definition nerfbot-rest-api --query taskDefinition > task-definition.json
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "master" ] && VERSION=staging
+          echo "image=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:$VERSION" >> $GITHUB_OUTPUT
 
       - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
+        id: render-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
           container-name: nerfbot-rest-api
-          image: $IMAGE_ID:$VERSION
+          image: ${{ steps.download-task-def.outputs.image }}
 
-#       - name: Deploy to Amazon ECS
-#         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-#         with:
-#           task-definition: task-definition.json
-#           service: nerfbot-rest-api-service
-#           cluster: nerfbot-rest-api
-#           wait-for-service-stability: true
+      - name: Deploy to Amazon ECS
+        id: deploy-task-def-ecs
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          service: nerfbot-rest-api-service
+          cluster: nerfbot-rest-api
+          wait-for-service-stability: true
