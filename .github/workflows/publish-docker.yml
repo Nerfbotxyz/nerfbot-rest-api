@@ -52,7 +52,7 @@ jobs:
     
     steps:
       - name: Configure AWS credentials
-        if: configure-aws-creds
+        id: configure-aws-creds
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.REST_API_DEPLOYER_ACCESS_KEY }}
