@@ -68,7 +68,7 @@ jobs:
         with:
           task-definition: task-definition.json
           container-name: nerfbot-rest-api
-          image: ${{ steps.build-image.outputs.image }}
+          image: $IMAGE_ID:$VERSION
 
 #       - name: Deploy to Amazon ECS
 #         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
