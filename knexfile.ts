@@ -11,7 +11,10 @@ export const SCHEMA_NAME = process.env.DB_SCHEMA || 'nerfbot'
 const config: { [key: string]: Knex.Config } = {
   development: {
     client: 'pg',
-    connection: `postgresql://${user}:${pass}@${host}:${port}/${name}`
+    connection: `postgresql://${user}:${pass}@${host}:${port}/${name}`,
+    seeds: {
+      directory: './seeds'
+    }
   },
 
   staging: {
@@ -46,6 +49,8 @@ const config: { [key: string]: Knex.Config } = {
     }
   }
 }
+
+console.log('config', config)
 
 export const onUpdateTrigger = (tableName: string) => `
   CREATE TRIGGER ${tableName}_updated_at
