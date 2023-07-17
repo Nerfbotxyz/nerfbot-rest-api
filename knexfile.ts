@@ -50,8 +50,6 @@ const config: { [key: string]: Knex.Config } = {
   }
 }
 
-console.log('config', config)
-
 export const onUpdateTrigger = (tableName: string) => `
   CREATE TRIGGER ${tableName}_updated_at
   BEFORE UPDATE ON ${SCHEMA_NAME}.${tableName}

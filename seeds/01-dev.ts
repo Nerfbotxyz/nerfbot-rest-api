@@ -12,17 +12,17 @@ export async function seed(knex: Knex): Promise<void> {
 
     // Inserts users into users table
     await knex("nerfbot.users").insert([
-        { userId: 1, username: "mario"},
-        { userId: 2, username: "luigi"},
-        { userId: 3, username: "yoshi"}
+        { username: "mario"},
+        { username: "luigi"},
+        { username: "yoshi"}
     ]);
 
 
     // Inserts API Keys into api_keys table
     await knex("nerfbot.api_keys").insert([
-        { apiKeyId: 1, userId: 1 },
-        { apiKeyId: 2, userId: 2 },
-        { apiKeyId: 3, userId: 3 },
+        { userId: 1 },
+        { userId: 2 },
+        { userId: 3 },
 
     ]);
 
