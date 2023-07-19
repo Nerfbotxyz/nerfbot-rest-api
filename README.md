@@ -49,6 +49,17 @@ Make sure you run the migrations to prep the database structure for the app.
 $ npx knex migrate:latest
 ```
 
+### Applying Dev Seed
+
+There is a provided dev seed you can run to see the DB with some test data. 
+
+```bash
+$ npx knex seed:run
+```
+
+Note: The dev seed file starts off by deleting all of the data in the database first, which is used for testing purposes. You wouldn't want something like this for use in a production environment so keep in mind to comment out or get rid of those lines before using this setup for production.
+
+
 ## Run
 ```bash
 $ npm start
