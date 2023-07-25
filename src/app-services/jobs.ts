@@ -102,16 +102,40 @@ export default class JobsAppService {
     userId: number,
     apiKey: string,
     trainingId: string,
+    _renderType?: any,
+    _orbitalRadius?: any,
     callbackURL?: string
   ) {
     this.logger.info(
       'createRenderJob',
-      { apiKey, trainingId, callbackURL }
+      { apiKey, trainingId, renderType: _renderType, callbackURL }
     )
+
+    let renderType: 'orbital' | 'interpolate' | 'spiral' = 'orbital'
+    let orbitalRadius: 1 | 0.5 | 1.5 = 1
+
+    if (
+      typeof _renderType === 'string'
+      && ['interpolate', 'spiral'].includes(_renderType)
+    ) {
+      renderType = _renderType as 'interpolate' | 'spiral'
+    }
+
+    if (
+      typeof _orbitalRadius === 'number'
+      && [0.5, 1.5].includes(_orbitalRadius)
+    ) {
+      orbitalRadius = _orbitalRadius as 0.5 | 1.5
+    }
+
     const training = await this.trainingsAppService.get(apiKey, trainingId)
     if (!training) { return null }
 
-    const jobData: any = { trainingId: training.trainingId }
+    const jobData: any = { 
+      trainingId: training.trainingId,
+      renderType,
+      orbitalRadius
+    }
 
     if (callbackURL) {
       jobData.callbackURL = callbackURL
