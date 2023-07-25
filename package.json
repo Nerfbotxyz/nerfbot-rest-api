@@ -1,6 +1,6 @@
 {
   "name": "nerfbot-rest-api",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Nerfbot REST API",
   "author": "Jim Toth <jim@artby.city>",
   "private": true,
