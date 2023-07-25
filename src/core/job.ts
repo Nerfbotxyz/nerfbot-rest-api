@@ -18,7 +18,9 @@ export interface TrainingJobData {
 }
 
 export interface RenderJobData {
-  trainingId: string
+  trainingId: string,
+  renderType?:  'orbital' | 'interpolate' | 'spiral',
+  orbitalRadius?: 1 | 0.5 | 1.5
 }
 
 export interface ExportJobData {

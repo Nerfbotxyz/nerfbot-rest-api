@@ -45,7 +45,7 @@ export default class NerfRendersRouter {
     try {
       const render = await this.rendersAppService.get(
         ctx.state.auth!.apiKey,
-        ctx.params.renderId
+        ctx.params.renderId,
       )
 
       if (render) {

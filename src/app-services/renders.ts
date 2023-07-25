@@ -15,7 +15,7 @@ export default class RendersAppService implements IAppService {
   ) {}
 
   async get(apiKey: string, renderId: string): Promise<Render | null> {
-    return await this.rendersRepository.first({ apiKey, renderId })
+    return await this.rendersRepository.first({ apiKey, renderId})
   }
 
   async list(apiKey: string): Promise<Render[]> {

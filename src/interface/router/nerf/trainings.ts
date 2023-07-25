@@ -61,12 +61,14 @@ export default class NerfTrainingsRouter {
 
   private async renderTraining(ctx: ParameterizedContext) {
     try {
-      const { callbackURL } = ctx.request.body as any
+      const { callbackURL, renderType, orbitalRadius } = ctx.request.body as any
 
       const renderJob = await this.jobsAppService.createRenderJob(
         ctx.state.auth!.userId,
         ctx.state.auth!.apiKey,
         ctx.params.trainingId,
+        renderType,
+        orbitalRadius,
         callbackURL
       )
 
