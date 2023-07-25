@@ -156,6 +156,28 @@ prep an upload for training
     { "callbackURL": "http://myserver.com" }
     ```
 
+    You can also add an optional `renderType` param for different camera path render outputs. Different options include:
+    - Orbital (default)
+    - Interpolate
+    - Spiral
+
+    ```json
+    { "renderType": "orbital"}
+    ```
+
+    Include one of the above options in the body of the request to have it render a camera path in that style. 
+    
+    For the `orbital` option, you can also specify an optional `orbitalRadius` value for how far away the camera path is in regard to the center of the render scene. Values are either:
+    - 0.5
+    - 1 (default)
+    - 1.5
+
+    ```json
+    { "renderType": "orbital"
+      "orbitalRadius": 0.5
+    }
+    ```
+
 - `POST` `/nerf/trainings/:trainingId/export` - Export geometry of a NeRF training artifact
   - Body (optional) (`application/json`)
 
@@ -164,6 +186,8 @@ prep an upload for training
     ```json
     { "callbackURL": "http://myserver.com" }
     ```
+
+
 
 ### Render Artifacts
 - `GET` `/nerf/renders` - List your renders
