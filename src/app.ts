@@ -7,15 +7,14 @@ import bodyParser from 'koa-bodyparser'
 
 import { IRouter, ROUTERS } from './interface/router'
 import { AuthState } from './interface/middleware'
-import { AppConfig, buildContainer, config } from './inversify.config'
+import { buildContainer, config } from './inversify.config'
 import { PostgresAdapter } from './infra/db/adapter'
 import { S3Adapter } from './infra/bucket/adapter'
 import Logger from './util/logger'
 import { APP_SERVICES, JobsAppService } from './app-services'
 import CallbacksQueue from './service/queue/callbacks'
 import { QUEUES } from './service/queue'
-import { version } from 'uuid'
-import { Container } from 'inversify'
+
 
 export type State = Koa.DefaultState & {
   auth?: AuthState
@@ -47,7 +46,6 @@ export default class NerfbotRestApi {
     this.s3 = container.get<S3Adapter>('S3Adapter')
     this.callbacksQueue = container.get<CallbacksQueue>(QUEUES.CallbacksQueue)
 
-    const version = config.version
     const router = new Router()
     const routers: { path: string, id: symbol }[] = [
       { path: '/auth', id: ROUTERS.AuthRouter },
@@ -58,7 +56,7 @@ export default class NerfbotRestApi {
     const healthcheck = (ctx: ParameterizedContext) => {
       ctx.body = {
         health: 'ok',
-        version: version
+        version: config.version
       }
 
       return
