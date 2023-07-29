@@ -74,6 +74,7 @@ export class AppConfig {
     renders: process.env.RENDERS_BUCKET || 'RENDERS_BUCKET not set!',
     exports: process.env.EXPORTS_BUCKET || 'EXPORTS_BUCKET not set!'
   }
+  version = process.env.npm_package_version
 }
 export const config = new AppConfig()
 

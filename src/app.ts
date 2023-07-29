@@ -15,6 +15,7 @@ import { APP_SERVICES, JobsAppService } from './app-services'
 import CallbacksQueue from './service/queue/callbacks'
 import { QUEUES } from './service/queue'
 
+
 export type State = Koa.DefaultState & {
   auth?: AuthState
 }
@@ -53,7 +54,10 @@ export default class NerfbotRestApi {
 
     // TODO -> Refactor into a HealthcheckRouter
     const healthcheck = (ctx: ParameterizedContext) => {
-      ctx.body = { health: 'ok' }
+      ctx.body = {
+        health: 'ok',
+        version: config.version
+      }
 
       return
     }
