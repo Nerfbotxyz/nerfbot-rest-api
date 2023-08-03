@@ -104,15 +104,24 @@ export default class JobsAppService {
     trainingId: string,
     _renderType?: any,
     _orbitalRadius?: any,
+    _downscaleFactor?: any,
     callbackURL?: string
   ) {
     this.logger.info(
       'createRenderJob',
-      { apiKey, trainingId, renderType: _renderType, callbackURL }
+      { 
+      apiKey, 
+      trainingId, 
+      renderType: _renderType, 
+      orbitalRadius: _orbitalRadius, 
+      downscaleFactor: _downscaleFactor, 
+      callbackURL 
+      }
     )
 
     let renderType: 'orbital' | 'interpolate' | 'spiral' = 'orbital'
     let orbitalRadius: 1 | 0.5 | 1.5 = 1
+    let downscaleFactor: number = 1
 
     if (
       typeof _renderType === 'string'
@@ -128,13 +137,22 @@ export default class JobsAppService {
       orbitalRadius = _orbitalRadius as 0.5 | 1.5
     }
 
+    if (
+      typeof _downscaleFactor === 'number' 
+      && _downscaleFactor >= 1 
+      && _downscaleFactor <= 3
+    ) {
+      downscaleFactor = _downscaleFactor
+    }
+
     const training = await this.trainingsAppService.get(apiKey, trainingId)
     if (!training) { return null }
 
     const jobData: any = { 
       trainingId: training.trainingId,
       renderType,
-      orbitalRadius
+      orbitalRadius,
+      downscaleFactor
     }
 
     if (callbackURL) {
