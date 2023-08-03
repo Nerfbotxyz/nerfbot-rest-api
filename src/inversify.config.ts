@@ -35,7 +35,7 @@ import {
   User,
   UsersRepository
 } from './service/repository'
-import { CallbackJob, Job } from './core'
+import { CallbackJob, Job, JobType } from './core'
 import {
   APP_SERVICES,
   AuthAppService,
@@ -175,7 +175,7 @@ export const buildContainer = (): Container => {
    * Processors
    */
   container
-    .bind<JobProcessor<CallbackJob<any>>>(PROCESSORS.CallbacksProcessor)
+    .bind<JobProcessor<JobType>>(PROCESSORS.CallbacksProcessor)
     .toFunction(CallbacksProcessor)
 
   /**
