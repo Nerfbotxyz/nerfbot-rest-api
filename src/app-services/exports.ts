@@ -31,38 +31,27 @@ export default class ExportsAppService implements IAppService {
 
   async getDownloadStream(apiKey: string, exportId: string) {
     const theExport = await this.get(apiKey, exportId)
+    if (!theExport) { return null }
+    const streamContainers = await this.s3.getObjectStreams(
+      this.config.s3.exports,
+      `${exportId}`
+    )
+    if (!streamContainers) { return null }
 
-    if (theExport) {
-      const objectStreams = await this.s3.getObjectStreams(
-        this.config.s3.exports,
-        `${exportId}`
+    const zipper = archiver('zip', { zlib: { level: constants.Z_BEST_SPEED } })
+    const zipStream = new PassThrough()
+    zipper.pipe(zipStream)
+
+    streamContainers.forEach(({ Key, Body }) => {
+      zipper.append(
+        // @ts-ignore - the AWS SDK only includes types for browser streams
+        Body,
+        { name: Key.replace(`${exportId}/`, '') }
       )
+    })
 
-      if (objectStreams) {
-        const zipper = archiver(
-          'zip',
-          { zlib: { level: constants.Z_BEST_SPEED } }
-        )
+    zipper.finalize()
 
-        const zipStream = new PassThrough()
-        zipper.pipe(zipStream)
-
-        objectStreams.forEach(({ Key, stream }) => {
-          zipper.append(
-            // @ts-ignore - the AWS SDK only includes types for browser streams
-            stream,
-            { name: Key.replace(`${exportId}/`, '') }
-          )
-        })
-
-        zipper.finalize()
-
-        return zipStream
-      }
-      
-      return null
-    }
-
-    return null
+    return zipStream
   }
 }

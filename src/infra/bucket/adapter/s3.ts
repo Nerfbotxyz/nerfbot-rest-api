@@ -10,9 +10,18 @@ import { SdkStream } from '@aws-sdk/types/dist-types/serde'
 import { injectable } from 'inversify'
 import { Readable } from 'stream'
 
+import Logger from '~/util/logger'
+
+export type S3StreamContainer = {
+  Key: string,
+  ContentLength?: number
+  Body?: SdkStream<Readable | ReadableStream | Blob | undefined>
+}
+
 @injectable()
 export default class S3Adapter {
   client!: S3Client
+  private logger: Logger = new Logger('S3Adapter')
 
   constructor() {
     this.client = new S3Client({})
@@ -32,13 +41,24 @@ export default class S3Adapter {
     await upload.done()
   }
 
-  async getObjectStream(Bucket: string, Key: string) {
-    const obj = await this.client.send(new GetObjectCommand({ Bucket, Key }))
+  async getObjectStream(
+    Bucket: string,
+    Key: string
+  ): Promise<S3StreamContainer> {
+    const {
+      Body,
+      ContentLength
+    } = await this.client.send(new GetObjectCommand({ Bucket, Key }))
 
-    return obj.Body
+    this.logger.log('Key', Key, 'ContentLength', ContentLength)
+
+    return { Body, ContentLength, Key }
   }
 
-  async getObjectStreams(Bucket: string, Prefix: string) {
+  async getObjectStreams(
+    Bucket: string,
+    Prefix: string
+  ): Promise<S3StreamContainer[] | null> {
     const { Contents } = await this.client.send(new ListObjectsV2Command({
       Bucket, Prefix
     }))
@@ -49,24 +69,24 @@ export default class S3Adapter {
         .filter<string>((Key): Key is string => !!Key)
         .map(
           Key =>
-            new Promise<{ Key: string, obj: GetObjectCommandOutput }>(
-              async resolve =>
-                resolve({
-                  Key,
-                  obj: await this.client.send(
-                    new GetObjectCommand({ Bucket, Key })
-                  )
-                })
+            new Promise<S3StreamContainer>(
+              async resolve => {
+                const { Body, ContentLength } = await this.client.send(
+                  new GetObjectCommand({ Bucket, Key })
+                )
+                resolve({ Key, Body, ContentLength })
+              }
             )
         )
       
-      const objects = await Promise.all(getCommands)
+      // const objects =
+      return await Promise.all(getCommands)
 
-      return objects
-        .map(({ Key, obj }) => { return { Key, stream: obj.Body } })
-        .filter<{ Key: string, stream: SdkStream<Readable | ReadableStream | Blob> }>(
-          (s): s is { Key: string, stream: SdkStream<Readable | ReadableStream | Blob> } => !!s
-        )
+      // return objects
+      //   .map(({ Key, obj }) => { return { Key, stream: obj.Body } })
+      //   .filter<S3StreamContainer>(
+      //     (s): s is S3StreamContainer => !!s
+      //   )
     }
 
     return null
