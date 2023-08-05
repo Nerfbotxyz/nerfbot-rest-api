@@ -173,8 +173,17 @@ prep an upload for training
     - 1.5
 
     ```json
-    { "renderType": "orbital"
+    {
+      "renderType": "orbital"
       "orbitalRadius": 0.5
+    }
+    ```
+
+    You may optionally include a `downscaleFactor` with a value between `1` and `3`.  This will scale the resolution of the video down by this factor.  E.g. a 1080p video will become 960p
+    If not provided, or an invalid value is provided, `downscaleFactor` will default to `1`.
+    ```json
+    {
+      "downscaleFactor": 2.5
     }
     ```
 
