@@ -71,16 +71,20 @@ export default class NerfRendersRouter {
 
   private async downloadRender(ctx: ParameterizedContext) {
     try {
-      const downloadStream = await this.rendersAppService.getDownloadStream(
+      const streamContainer = await this.rendersAppService.getDownloadStream(
         ctx.state.auth!.apiKey,
         ctx.params.renderId
       )
 
-      if (downloadStream) {
+      if (streamContainer) {
         ctx.status = 200
-        ctx.body = downloadStream
+        ctx.body = streamContainer.Body
         ctx.set('Content-Type', 'video/mp4')
         ctx.set('Accept-Ranges', 'bytes')
+        ctx.set(
+          'Content-Length',
+          (streamContainer.ContentLength || 0).toString()
+        )
       } else {
         ctx.status = 404
       }
