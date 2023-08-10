@@ -41,4 +41,5 @@ export default interface Job<T extends JobType> {
   status: JobStatus
   jobName: string
   jobData: T
+  apiKeyLabel?: string
 }
