@@ -5,7 +5,7 @@ import { BullAdapter } from '~/infra/queue/adapter'
 import { CallbackJob, JobType } from '~/core'
 import { JobProcessor, PROCESSORS } from '~/processors'
 import { IQueueService } from './'
-import { JobsRepository, REPOSITORIES } from '../repository'
+import { JobsRepository, REPOSITORIES, ApiKeysRepository } from '../repository'
 
 @injectable()
 export default class CallbacksQueue implements IQueueService {
@@ -16,7 +16,9 @@ export default class CallbacksQueue implements IQueueService {
     @inject(PROCESSORS.CallbacksProcessor)
     private processor: JobProcessor<JobType>,
     @inject(REPOSITORIES.JobsRepository) 
-    protected jobsRepository: JobsRepository
+    protected jobsRepository: JobsRepository,
+    @inject(REPOSITORIES.ApiKeysRepository) 
+    protected apiKeysRepository: ApiKeysRepository
   ) {
     this.queue = queueAdapter.get('callbacks')
   }
@@ -26,6 +28,11 @@ export default class CallbacksQueue implements IQueueService {
       async job => {
         const dbJob = await this.jobsRepository.first({ id: job.id.toString() })
         if (!dbJob) { return }
+
+        const dbApiKey = await this.apiKeysRepository.first(
+          { apiKey: dbJob.apiKey }
+        )
+        dbJob.apiKeyLabel = dbApiKey?.label
 
         this.processor(dbJob as CallbackJob<JobType>)
       }
