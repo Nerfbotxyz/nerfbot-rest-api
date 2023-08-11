@@ -9,6 +9,7 @@ import {
   UploadsAppService
 } from './'
 import Logger from '~/util/logger'
+import { Job } from '~/core'
 
 export type NerfProcessDataInputType =
   | 'images'
@@ -51,20 +52,7 @@ export default class JobsAppService {
       mediaType: upload.mediaType
     }
 
-    if (callbackURL) {
-      jobData.callbackURL = callbackURL
-    }
-
-    const job = await this.jobsRepository.create({
-      userId,
-      apiKey,
-      jobName: 'process',
-      jobData
-    })
-
-    await this.jobQueue.add(job)
-
-    return job
+    return this.createJob(userId, apiKey, 'process', jobData, callbackURL)
   }
 
   async createTrainingJob(
@@ -82,20 +70,7 @@ export default class JobsAppService {
 
     const jobData: any = { processedId: processed.processedId }
 
-    if (callbackURL) {
-      jobData.callbackURL = callbackURL
-    }
-
-    const job = await this.jobsRepository.create({
-      userId,
-      apiKey,
-      jobName: 'train',
-      jobData
-    })
-
-    await this.jobQueue.add(job)
-
-    return job
+    return this.createJob(userId, apiKey, 'train', jobData, callbackURL)
   }
 
   async createRenderJob(
@@ -155,20 +130,7 @@ export default class JobsAppService {
       downscaleFactor
     }
 
-    if (callbackURL) {
-      jobData.callbackURL = callbackURL
-    }
-
-    const job = await this.jobsRepository.create({
-      userId,
-      apiKey,
-      jobName: 'render',
-      jobData
-    })
-
-    await this.jobQueue.add(job)
-
-    return job
+    return this.createJob(userId, apiKey, 'render', jobData, callbackURL)
   }
 
   async createExportJob(
@@ -186,14 +148,24 @@ export default class JobsAppService {
 
     const jobData: any = { trainingId: training.trainingId }
 
-    if (callbackURL) {
+    return this.createJob(userId, apiKey, 'export', jobData, callbackURL)
+  }
+
+  private async createJob(
+    userId: number,
+    apiKey: string,
+    jobName: string,
+    jobData: any,
+    callbackURL?: string
+  ): Promise<Job<any> | null> {
+    if (typeof callbackURL === 'string') {
       jobData.callbackURL = callbackURL
     }
 
     const job = await this.jobsRepository.create({
       userId,
       apiKey,
-      jobName: 'export',
+      jobName,
       jobData
     })
 
