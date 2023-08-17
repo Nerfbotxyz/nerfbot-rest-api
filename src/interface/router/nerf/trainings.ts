@@ -2,7 +2,11 @@ import Router from '@koa/router'
 import { inject, injectable } from 'inversify'
 
 import { Context, ParameterizedContext, State } from '~/app'
-import { APP_SERVICES, JobsAppService, TrainingsAppService } from '~/app-services'
+import {
+  APP_SERVICES,
+  JobsAppService,
+  TrainingsAppService
+} from '~/app-services'
 import Logger from '~/util/logger'
 
 @injectable()
@@ -28,12 +32,13 @@ export default class NerfTrainingsRouter {
 
   private async exportTraining(ctx: ParameterizedContext) {
     try {
-      const { callbackURL } = ctx.request.body as any
+      const { callbackURL, jobLabel } = ctx.request.body as any
 
       const exportJob = await this.jobsAppService.createExportJob(
         ctx.state.auth!.userId,
         ctx.state.auth!.apiKey,
         ctx.params.trainingId,
+        jobLabel,
         callbackURL
       )
 
@@ -61,7 +66,13 @@ export default class NerfTrainingsRouter {
 
   private async renderTraining(ctx: ParameterizedContext) {
     try {
-      const { callbackURL, renderType, orbitalRadius, downscaleFactor } = ctx.request.body as any
+      const {
+        callbackURL,
+        renderType,
+        orbitalRadius,
+        downscaleFactor,
+        jobLabel
+      } = ctx.request.body as any
 
       const renderJob = await this.jobsAppService.createRenderJob(
         ctx.state.auth!.userId,
@@ -70,6 +81,7 @@ export default class NerfTrainingsRouter {
         renderType,
         orbitalRadius,
         downscaleFactor,
+        jobLabel,
         callbackURL
       )
 

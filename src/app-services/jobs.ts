@@ -41,15 +41,22 @@ export default class JobsAppService {
     userId: number,
     apiKey: string,
     uploadId: string,
+    label?: string,
     callbackURL?: string
   ) {
-    this.logger.info('createProcessJob', { apiKey, uploadId, callbackURL })
+    this.logger.info('createProcessJob', {
+      apiKey,
+      uploadId,
+      label,
+      callbackURL
+    })
     const upload = await this.uploadsAppService.get(apiKey, uploadId)
     if (!upload) { return null }
-
+    
     const jobData: any = {
       uploadId: upload.uploadId,
-      mediaType: upload.mediaType
+      mediaType: upload.mediaType,
+      label: label ? label : upload.fileName
     }
 
     return this.createJob(userId, apiKey, 'process', jobData, callbackURL)
@@ -59,16 +66,20 @@ export default class JobsAppService {
     userId: number,
     apiKey: string,
     processedId: string,
+    label?: string,
     callbackURL?: string
   ) {
     this.logger.info(
       'createTrainingJob',
-      { apiKey, processedId, callbackURL }
+      { apiKey, processedId, label, callbackURL }
     )
     const processed = await this.processedAppService.get(apiKey, processedId)
     if (!processed) { return null }
 
-    const jobData: any = { processedId: processed.processedId }
+    const jobData: any = { 
+      processedId: processed.processedId,
+      label: label ? label : processed.label
+     }
 
     return this.createJob(userId, apiKey, 'train', jobData, callbackURL)
   }
@@ -77,6 +88,7 @@ export default class JobsAppService {
     userId: number,
     apiKey: string,
     trainingId: string,
+    label?: string,
     _renderType?: any,
     _orbitalRadius?: any,
     _downscaleFactor?: any,
@@ -86,7 +98,8 @@ export default class JobsAppService {
       'createRenderJob',
       { 
       apiKey, 
-      trainingId, 
+      trainingId,
+      label,
       renderType: _renderType, 
       orbitalRadius: _orbitalRadius, 
       downscaleFactor: _downscaleFactor, 
@@ -127,7 +140,8 @@ export default class JobsAppService {
       trainingId: training.trainingId,
       renderType,
       orbitalRadius,
-      downscaleFactor
+      downscaleFactor,
+      label: label ? label : training.label
     }
 
     return this.createJob(userId, apiKey, 'render', jobData, callbackURL)
@@ -137,16 +151,20 @@ export default class JobsAppService {
     userId: number,
     apiKey: string,
     trainingId: string,
+    label?: string,
     callbackURL?: string
   ) {
     this.logger.info(
       'createExportJob',
-      { apiKey, trainingId, callbackURL }
+      { apiKey, trainingId, label, callbackURL }
     )
     const training = await this.trainingsAppService.get(apiKey, trainingId)
     if (!training) { return null }
 
-    const jobData: any = { trainingId: training.trainingId }
+    const jobData: any = {
+      trainingId: training.trainingId,
+      label: label ? label : training.label
+    }
 
     return this.createJob(userId, apiKey, 'export', jobData, callbackURL)
   }

@@ -9,6 +9,7 @@ export interface Render {
   processedId: string
   trainingId: string
   renderId: string
+  label: string
 }
 
 @injectable()

@@ -31,12 +31,13 @@ export default class NerfProcessedRouter {
 
   private async trainProcessed(ctx: ParameterizedContext) {
     try {
-      const { callbackURL } = ctx.request.body as any
+      const { jobLabel, callbackURL } = ctx.request.body as any
 
       const trainingJob = await this.jobsAppService.createTrainingJob(
         ctx.state.auth!.userId,
         ctx.state.auth!.apiKey,
         ctx.params.processedId,
+        jobLabel,
         callbackURL
       )
 
