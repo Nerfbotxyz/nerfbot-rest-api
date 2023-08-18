@@ -25,13 +25,13 @@ export default class UploadsAppService implements IAppService {
     const mediaType = await this.uploadsBucket.upload(uploadId, req)
     
     // get filename
-    let fileName = ""
+    let uploadName = ""
     const bus = busboy({
       headers: req.headers,
       limits: { fileSize: 5e8 }
     })
     bus.on('file', async (name, stream, { filename }) => {
-      fileName = filename
+      uploadName = filename
     })
 
     await this.uploadsRepository.create(
@@ -40,7 +40,7 @@ export default class UploadsAppService implements IAppService {
         apiKey, 
         uploadId, 
         mediaType,
-        fileName
+        uploadName
       }
     )
 

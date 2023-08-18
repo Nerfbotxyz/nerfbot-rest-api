@@ -56,7 +56,7 @@ export default class JobsAppService {
     const jobData: any = {
       uploadId: upload.uploadId,
       mediaType: upload.mediaType,
-      label: label ? label : upload.fileName
+      label: label ? label : upload.uploadName
     }
 
     return this.createJob(userId, apiKey, 'process', jobData, callbackURL)

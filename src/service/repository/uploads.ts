@@ -8,7 +8,7 @@ export interface Upload {
   apiKey: string
   uploadId: string
   mediaType: NsProcessMediaType
-  fileName: string
+  uploadName: string
 }
 
 @injectable()
