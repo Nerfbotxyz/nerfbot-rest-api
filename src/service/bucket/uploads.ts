@@ -9,6 +9,11 @@ import { IBucketService } from './'
 import Logger from '~/util/logger'
 import { NsProcessMediaType } from '~/core'
 
+type UploadResult = {
+  mediaType: NsProcessMediaType
+  filenames: string[]
+}
+
 @injectable()
 export default class UploadsBucketService implements IBucketService {
   private logger: Logger = new Logger('UploadsBucketService')
@@ -22,9 +27,9 @@ export default class UploadsBucketService implements IBucketService {
   }
 
   async upload(id: string, req: IncomingMessage) {
-    return new Promise<NsProcessMediaType>(async (resolve, reject) => {
+    return new Promise<UploadResult>(async (resolve, reject) => {
       const uploadStreams: Promise<void>[] = []
-      const mimeTypes: string[] = []
+      const filenamesAndMimetypes: { filename: string, mimeType: string }[] = []
 
       try {
         const bus = busboy({
@@ -34,7 +39,7 @@ export default class UploadsBucketService implements IBucketService {
 
         bus.on('file', async (name, stream, { filename }) => {
           const mimeType = mime.getType(filename) || 'application/octet-stream'
-          mimeTypes.push(mimeType)
+          filenamesAndMimetypes.push({ filename, mimeType })
           uploadStreams.push(
             this.adapter.upload({
               Bucket: this.bucket,
@@ -49,18 +54,21 @@ export default class UploadsBucketService implements IBucketService {
           bus.removeAllListeners()
           await Promise.all(uploadStreams)
 
-          if (mimeTypes.length < 1) {
+          if (filenamesAndMimetypes.length < 1) {
             reject(new Error('No files'))
           } else {
-            this.logger.info('Got mime types', mimeTypes)
+            this.logger.info('Got files and mime types', filenamesAndMimetypes)
 
             // NB: for now, we only support video and images media types
-            const videoOrImage = mimeTypes[0].split('/')[0]  
+            const videoOrImage = filenamesAndMimetypes[0].mimeType.split('/')[0]
             const mediaType: NsProcessMediaType = videoOrImage === 'image'
               ? 'images'
               : 'video'
   
-            resolve(mediaType)
+            resolve({
+              mediaType,
+              filenames: filenamesAndMimetypes.map(({ filename }) => filename)
+            })
           }
         })
 

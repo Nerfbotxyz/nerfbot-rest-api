@@ -52,11 +52,11 @@ export default class JobsAppService {
     })
     const upload = await this.uploadsAppService.get(apiKey, uploadId)
     if (!upload) { return null }
-    
+
     const jobData: any = {
       uploadId: upload.uploadId,
       mediaType: upload.mediaType,
-      label: label ? label : upload.uploadName
+      label: typeof label === 'string' ? label : upload.uploadName
     }
 
     return this.createJob(userId, apiKey, 'process', jobData, callbackURL)
@@ -78,7 +78,7 @@ export default class JobsAppService {
 
     const jobData: any = { 
       processedId: processed.processedId,
-      label: label ? label : processed.label
+      label: typeof label === 'string' ? label : processed.label
      }
 
     return this.createJob(userId, apiKey, 'train', jobData, callbackURL)
@@ -141,7 +141,7 @@ export default class JobsAppService {
       renderType,
       orbitalRadius,
       downscaleFactor,
-      label: label ? label : training.label
+      label: typeof label === 'string' ? label : training.label
     }
 
     return this.createJob(userId, apiKey, 'render', jobData, callbackURL)
@@ -163,7 +163,7 @@ export default class JobsAppService {
 
     const jobData: any = {
       trainingId: training.trainingId,
-      label: label ? label : training.label
+      label: typeof label === 'string' ? label : training.label
     }
 
     return this.createJob(userId, apiKey, 'export', jobData, callbackURL)
