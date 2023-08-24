@@ -169,12 +169,13 @@ export default class NerfUploadsRouter {
 
   private async processUpload(ctx: ParameterizedContext) {
     try {
-      const { callbackURL } = ctx.request.body as any
+      const { label, callbackURL } = ctx.request.body as any
 
       const processJob = await this.jobsAppService.createProcessJob(
         ctx.state.auth!.userId,
         ctx.state.auth!.apiKey,
         ctx.params.uploadId,
+        label,
         callbackURL
       )
 

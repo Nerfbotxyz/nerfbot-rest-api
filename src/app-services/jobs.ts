@@ -88,10 +88,10 @@ export default class JobsAppService {
     userId: number,
     apiKey: string,
     trainingId: string,
-    label?: string,
     _renderType?: any,
     _orbitalRadius?: any,
     _downscaleFactor?: any,
+    label?: string,
     callbackURL?: string
   ) {
     this.logger.info(
@@ -99,10 +99,10 @@ export default class JobsAppService {
       { 
       apiKey, 
       trainingId,
-      label,
       renderType: _renderType, 
       orbitalRadius: _orbitalRadius, 
-      downscaleFactor: _downscaleFactor, 
+      downscaleFactor: _downscaleFactor,
+      label,
       callbackURL 
       }
     )
