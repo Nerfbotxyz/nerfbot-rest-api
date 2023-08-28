@@ -21,6 +21,22 @@ export type NerfProcessDataInputType =
 
 const ENABLED_MEDIA_TYPES: NerfProcessDataInputType[] = [ 'images', 'video' ]
 
+const ORBIT_RADII = [ 0.5, 1, 1.5 ]
+type OrbitRadius = 0.5 | 1 | 1.5
+const ORBIT_ANGLES = [ 15, 30, 45 ]
+type OrbitAngle = 15 | 30 | 25
+
+export interface BaseJobOpts {
+  callbackURL?: any
+}
+
+export interface CreateRenderJobOpts extends BaseJobOpts {
+  renderType?: any
+  orbitalRadius?: any
+  orbitalAngle?: any
+  downscaleFactor?: any
+} 
+
 @injectable()
 export default class JobsAppService {
   private logger: Logger = new Logger('JobsAppService')
@@ -77,60 +93,56 @@ export default class JobsAppService {
     userId: number,
     apiKey: string,
     trainingId: string,
-    _renderType?: any,
-    _orbitalRadius?: any,
-    _downscaleFactor?: any,
-    callbackURL?: string
+    opts: CreateRenderJobOpts
   ) {
-    this.logger.info(
-      'createRenderJob',
-      { 
-      apiKey, 
-      trainingId, 
-      renderType: _renderType, 
-      orbitalRadius: _orbitalRadius, 
-      downscaleFactor: _downscaleFactor, 
-      callbackURL 
-      }
-    )
+    this.logger.info('createRenderJob', { apiKey, trainingId, ...opts })
 
     let renderType: 'orbital' | 'interpolate' | 'spiral' = 'orbital'
-    let orbitalRadius: 1 | 0.5 | 1.5 = 1
+    let orbitalRadius: OrbitRadius = 1
+    let orbitalAngle: OrbitAngle = 15
     let downscaleFactor: number = 1
 
     if (
-      typeof _renderType === 'string'
-      && ['interpolate', 'spiral'].includes(_renderType)
+      typeof opts.renderType === 'string'
+      && ['interpolate', 'spiral'].includes(opts.renderType)
     ) {
-      renderType = _renderType as 'interpolate' | 'spiral'
+      renderType = opts.renderType as 'interpolate' | 'spiral'
     }
 
     if (
-      typeof _orbitalRadius === 'number'
-      && [0.5, 1.5].includes(_orbitalRadius)
+      typeof opts.orbitalRadius === 'number'
+      && ORBIT_RADII.includes(opts.orbitalRadius)
     ) {
-      orbitalRadius = _orbitalRadius as 0.5 | 1.5
+      orbitalRadius = opts.orbitalRadius as OrbitRadius
     }
 
     if (
-      typeof _downscaleFactor === 'number' 
-      && _downscaleFactor >= 1 
-      && _downscaleFactor <= 3
+      typeof opts.orbitalAngle === 'number'
+      && ORBIT_ANGLES.includes(opts.orbitalAngle)
     ) {
-      downscaleFactor = _downscaleFactor
+      orbitalAngle = opts.orbitalAngle as OrbitAngle
+    }
+
+    if (
+      typeof opts.downscaleFactor === 'number' 
+      && opts.downscaleFactor >= 1 
+      && opts.downscaleFactor <= 3
+    ) {
+      downscaleFactor = opts.downscaleFactor
     }
 
     const training = await this.trainingsAppService.get(apiKey, trainingId)
     if (!training) { return null }
 
-    const jobData: any = { 
+    const jobData: any = {
       trainingId: training.trainingId,
       renderType,
       orbitalRadius,
+      orbitalAngle,
       downscaleFactor
     }
 
-    return this.createJob(userId, apiKey, 'render', jobData, callbackURL)
+    return this.createJob(userId, apiKey, 'render', jobData, opts.callbackURL)
   }
 
   async createExportJob(
@@ -156,7 +168,7 @@ export default class JobsAppService {
     apiKey: string,
     jobName: string,
     jobData: any,
-    callbackURL?: string
+    callbackURL?: any
   ): Promise<Job<any> | null> {
     if (typeof callbackURL === 'string') {
       jobData.callbackURL = callbackURL
