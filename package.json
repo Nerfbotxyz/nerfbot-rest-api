@@ -16,7 +16,7 @@
     "build": "rimraf dist && tsc && tsc-alias",
     "start": "node ./dist",
     "dev": "nodemon",
-    "test": "mocha -r ts-node/register -r tsconfig-paths/register test/spec/**/*.spec.ts"
+    "test": "LOG_LEVEL=error mocha -r ts-node/register -r tsconfig-paths/register test/spec/**/*.spec.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.338.0",
