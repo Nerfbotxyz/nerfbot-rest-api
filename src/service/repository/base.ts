@@ -28,6 +28,7 @@ export default class BaseRepository<T extends {}> implements IRepository<T> {
   }
 
   async first(thing: Partial<T>): Promise<T | null> {
+    console.log('first', thing)
     return await this.table.where(thing).first<T | undefined>() || null
   }
 }

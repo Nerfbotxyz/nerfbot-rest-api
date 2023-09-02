@@ -3,118 +3,145 @@ import 'mocha'
 import chai from 'chai'
 import * as sinon from 'sinon'
 import chaiHttp from 'chai-http'
-import { Container } from 'inversify'
 
 import NerfbotRestApi from '../../src/app'
-import { ApiKeysRepository, UploadsRepository } from '../../src/service/repository'
 import {
-  NerfRouter,
-  NerfJobsRouter,
-  NerfUploadsRouter,
-  NerfTrainingsRouter,
-  NerfProcessedRouter,
-  NerfRendersRouter,
-  NerfExportsRouter,
-  ROUTERS,
-  AuthRouter
-} from '../../src/interface/router'
+  ApiKeysRepository,
+  ExportsRepository,
+  JobsRepository,
+  ProcessedRepository,
+  REPOSITORIES,
+  RendersRepository,
+  RolesRepository,
+  TrainingsRepository,
+  UploadsRepository,
+  UsersRepository
+} from '../../src/service/repository'
 import * as deps from '../../src/inversify.config'
 import { PostgresAdapter } from '../../src/infra/db/adapter'
-import {
-  AuthAppService,
-  ExportsAppService,
-  JobsAppService,
-  ProcessedAppService,
-  RendersAppService,
-  TrainingsAppService,
-  UploadsAppService
-} from '../../src/app-services'
 import { S3Adapter } from '../../src/infra/bucket/adapter'
-import apiKeyMiddleware, { ApiKeyMiddleware } from '../../src/interface/middleware/api-key'
-import { UploadsBucket } from '../../src/service/bucket'
+import { BullAdapter } from '../../src/infra/queue/adapter'
+import { mockApiKeys, mockUploads, mockUsers } from './mock-data'
+import { CallbacksQueue, JobsQueue, QUEUES } from '../../src/service/queue'
+import { Job } from '../../src/core'
 
 chai.use(chaiHttp)
 
-const VALID_API_KEY = 'valid-api-key'
-
-let apiKeys: ApiKeysRepository,
-    requireApiToken: ApiKeyMiddleware,
-    authAppService: sinon.SinonStubbedInstance<AuthAppService>,
-    jobsAppService: sinon.SinonStubbedInstance<JobsAppService>,
-    uploadsAppService: UploadsAppService,
-    processedAppService: sinon.SinonStubbedInstance<ProcessedAppService>,
-    trainingsAppService: sinon.SinonStubbedInstance<TrainingsAppService>,
-    rendersAppService: sinon.SinonStubbedInstance<RendersAppService>,
-    exportsAppService: sinon.SinonStubbedInstance<ExportsAppService>,
-    uploadsBucket: sinon.SinonStubbedInstance<UploadsBucket>,
-    uploadsRepository: sinon.SinonStubbedInstance<UploadsRepository>
-
-function reset() {
-  apiKeys = new ApiKeysRepository(pg)
-  const apiKeysFirst = sinon.stub(apiKeys, 'first')
-  apiKeysFirst.resolves(null)
-  apiKeysFirst.withArgs({ apiKey: VALID_API_KEY }).resolves({
-    apiKeyId: 1,
-    apiKey: VALID_API_KEY,
-    userId: 1
-  })
-  uploadsBucket = sinon.createStubInstance(UploadsBucket)
-  uploadsRepository = sinon.createStubInstance(UploadsRepository)
-  requireApiToken = () => apiKeyMiddleware(apiKeys)
-  authAppService = sinon.createStubInstance(AuthAppService)
-  jobsAppService = sinon.createStubInstance(JobsAppService)
-  uploadsAppService = new UploadsAppService(uploadsBucket, uploadsRepository)
-  const uploadsAppServiceList = sinon.stub(uploadsAppService, 'list')
-  uploadsAppServiceList.resolves([])
-  processedAppService = sinon.createStubInstance(ProcessedAppService)
-  trainingsAppService = sinon.createStubInstance(TrainingsAppService)
-  rendersAppService = sinon.createStubInstance(RendersAppService)
-  exportsAppService = sinon.createStubInstance(ExportsAppService)
-}
-
-const container = new Container()
-const containerGet = sinon.stub(container, 'get')
+const container = deps.buildContainer()
 
 const pg = new PostgresAdapter('mock-connection-string')
-pg.client = sinon.stub(pg.client)
-containerGet.withArgs('PostgresAdapter').returns(pg)
+pg.client = sinon.stub() as any
+pg.client.raw = sinon.stub() as any
 
 const s3 = sinon.createStubInstance(S3Adapter, {
   testConnection: sinon.stub().resolves() as any
 })
-containerGet.withArgs('S3Adapter').returns(s3)
 
-reset()
+const bull = sinon.createStubInstance(BullAdapter)
 
-const authRouter = new AuthRouter(apiKeys!, requireApiToken!, authAppService!)
-containerGet.withArgs(ROUTERS.AuthRouter).returns(authRouter)
+container.unbind('S3Adapter')
+container.bind('S3Adapter').toConstantValue(s3)
+container.unbind('PostgresAdapter')
+container.bind('PostgresAdapter').toConstantValue(pg)
+container.unbind('BullAdapter')
+container.bind('BullAdapter').toConstantValue(bull)
 
-const jobsRouter = new NerfJobsRouter(jobsAppService!)
-const uploadsRouter = new NerfUploadsRouter(uploadsAppService!, jobsAppService!)
+// Bind mock api key data
+const apiKeysFirst = sinon.stub()
+mockApiKeys.forEach(mockApiKey => {
+  const { apiKey } = mockApiKey
+  apiKeysFirst.withArgs({ apiKey }).resolves(mockApiKey)
+})
+const apiKeysRepository = sinon.createStubInstance(ApiKeysRepository, {
+  first: apiKeysFirst as any
+})
+container.unbind(REPOSITORIES.ApiKeysRepository)
+container.bind(REPOSITORIES.ApiKeysRepository)
+  .toConstantValue(apiKeysRepository)
 
-const processedRouter = new NerfProcessedRouter(processedAppService!, jobsAppService!)
-const trainingsRouter = new NerfTrainingsRouter(trainingsAppService!, jobsAppService!)
-const rendersRouter = new NerfRendersRouter(rendersAppService!)
-const exportsRouter = new NerfExportsRouter(exportsAppService!)
+// Bind mock exports data
+container.unbind(REPOSITORIES.ExportsRepository)
+container.bind(REPOSITORIES.ExportsRepository)
+  .toConstantValue(sinon.createStubInstance(ExportsRepository))
 
-const nerfRouter = new NerfRouter(
-  apiKeys!,
-  requireApiToken!,
-  jobsRouter,
-  uploadsRouter,
-  processedRouter,
-  trainingsRouter,
-  rendersRouter,
-  exportsRouter
-)
-containerGet.withArgs(ROUTERS.NerfRouter).returns(nerfRouter)
+// Bind mock jobs data
+const jobsRepository = sinon.createStubInstance(JobsRepository, {
+  create: sinon
+    .stub()
+    .callsFake(async (job: Omit<Job<any>, 'id' | 'status'>) => {
+      return {
+        ...job,
+        id: 'mock-job-id',
+        status: 'WAITING'
+      }
+    }) as any
+})
+container.unbind(REPOSITORIES.JobsRepository)
+container.bind(REPOSITORIES.JobsRepository)
+  .toConstantValue(jobsRepository)
+
+// Bind mock processed data
+container.unbind(REPOSITORIES.ProcessedRepository)
+container.bind(REPOSITORIES.ProcessedRepository)
+  .toConstantValue(sinon.createStubInstance(ProcessedRepository))
+
+// Bind mock renders data
+container.unbind(REPOSITORIES.RendersRepository)
+container.bind(REPOSITORIES.RendersRepository)
+  .toConstantValue(sinon.createStubInstance(RendersRepository))
+
+// Bind mock roles data
+container.unbind(REPOSITORIES.RolesRepository)
+container.bind(REPOSITORIES.RolesRepository)
+  .toConstantValue(sinon.createStubInstance(RolesRepository))
+
+// Bind mock training data
+container.unbind(REPOSITORIES.TrainingsRepository)
+container.bind(REPOSITORIES.TrainingsRepository)
+  .toConstantValue(sinon.createStubInstance(TrainingsRepository))
+
+// Bind mock uploads data
+const listUploads = sinon.stub()
+mockApiKeys.forEach(mockApiKey => {
+  const { apiKey } = mockApiKey
+  const uploads = mockUploads.filter(upload => upload.apiKey === apiKey)
+  listUploads.withArgs({ apiKey }).resolves(uploads)
+})
+const firstUploads = sinon.stub()
+mockUploads.forEach(mockUpload => {
+  const { apiKey, uploadId } = mockUpload
+  firstUploads.withArgs({ apiKey, uploadId }).resolves(mockUpload)
+})
+const uploadsRepository = sinon.createStubInstance(UploadsRepository, {
+  list: listUploads as any,
+  first: firstUploads as any
+})
+container.unbind(REPOSITORIES.UploadsRepository)
+container.bind(REPOSITORIES.UploadsRepository)
+  .toConstantValue(uploadsRepository)
+
+// Bind mock users data
+container.unbind(REPOSITORIES.UsersRepository)
+container.bind(REPOSITORIES.UsersRepository)
+  .toConstantValue(sinon.createStubInstance(UsersRepository))
+
+container.unbind(QUEUES.JobsQueue)
+const jobsQueue = sinon.createStubInstance(JobsQueue, {
+  add: sinon.stub().resolves() as any
+})
+container.bind(QUEUES.JobsQueue).toConstantValue(jobsQueue)
+container.unbind(QUEUES.CallbacksQueue)
+const callbacksQueue = sinon.createStubInstance(CallbacksQueue)
+container.bind(QUEUES.CallbacksQueue).toConstantValue(callbacksQueue)
+
 sinon.stub(deps, 'buildContainer').returns(container)
-
 const api = new NerfbotRestApi()
 sinon.stub(api, 'createTestRedisClient').returns(
   { connect() {}, disconnect() {} } as any
 )
-
 api.start()
 
-export { api, reset, VALID_API_KEY }
+function reset() {}
+reset()
+
+export { api, reset }
