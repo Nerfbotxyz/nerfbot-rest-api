@@ -113,8 +113,6 @@ describe('Uploads', () => {
         .query({ token: mockApiKeys[0].apiKey })
         .send()
 
-      console.log('upload job', res.body)
-
       expect(res).to.have.status(200)
       expect(res.body.apiKey).to.equal(mockApiKeys[0].apiKey)
       expect(res.body.jobName).to.equal('process')
