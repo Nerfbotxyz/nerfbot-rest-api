@@ -11,7 +11,6 @@ import { buildContainer, config } from './inversify.config'
 import { PostgresAdapter } from './infra/db/adapter'
 import { S3Adapter } from './infra/bucket/adapter'
 import Logger from './util/logger'
-import { APP_SERVICES, JobsAppService } from './app-services'
 import CallbacksQueue from './service/queue/callbacks'
 import { QUEUES } from './service/queue'
 
@@ -66,7 +65,8 @@ export default class NerfbotRestApi {
 
     for (let i = 0; i < routers.length; i++) {
       const { path, id } = routers[i]
-      const subRouter = container.get<IRouter<State, Context>>(id).router
+      const _router = container.get<IRouter<State, Context>>(id)
+      const subRouter = _router.router
       router.use(path, subRouter.routes(), subRouter.allowedMethods())
     }
 
@@ -90,9 +90,13 @@ export default class NerfbotRestApi {
       })
   }
 
+  createTestRedisClient() {
+    return createClient(config.redis)
+  }
+
   private async testRedisAndThrowOnFailedConnection() {
     try {
-      const redisClient = createClient(config.redis)
+      const redisClient = this.createTestRedisClient()
       await redisClient.connect()
       await redisClient.disconnect()
     } catch (error) {
@@ -107,7 +111,7 @@ export default class NerfbotRestApi {
       await this.db.client.raw('SELECT 1')
     } catch (error) {
       this.logger.error('Postgres connection failed, see error below')
-
+      console.error(error)
       throw error
     }
   }

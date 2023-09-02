@@ -14,6 +14,9 @@ import NerfExportsRouter from './exports'
 export { default as NerfJobsRouter } from './jobs'
 export { default as NerfUploadsRouter } from './uploads'
 export { default as NerfTrainingsRouter } from './trainings'
+export { default as NerfProcessedRouter } from './processed'
+export { default as NerfExportsRouter } from './exports'
+export { default as NerfRendersRouter } from './renders'
 
 @injectable()
 export default class NerfRouter {
