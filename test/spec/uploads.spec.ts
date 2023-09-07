@@ -148,11 +148,23 @@ describe('Uploads', () => {
       })
     })
 
-    it('Callback URL tests',
-    
-    
-    
-    )
+    it('Callback URL tests', async () => {
+      const res = await chai
+        .request(api.server)
+        .post(route)
+        .query({ token: mockApiKeys[0].apiKey })
+        .send({
+          callbackURL: 'http://localhost:3000'
+        })
+      
+        
+      expect(res).to.have.status(200)
+      // console.log(res.body)
+      expect(res.body.apiKey).to.equal(mockApiKeys[0].apiKey)
+      expect(res.body.jobData.callbackURL).to.exist
+      expect(res.body.jobData.callbackURL).to.be.a('string')
+      // does this need to do anything else?
+    })
 
     it('HTTP 404', async () => {
       const route = '/nerf/uploads/foo'
