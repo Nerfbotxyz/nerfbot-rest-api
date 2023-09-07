@@ -50,10 +50,17 @@ describe('Uploads', () => {
 
     )
 
-    it('HTTP 411 Length Required', 
-      // check for content-length header on request
-      // return
-    )
+    it('HTTP 411 Length Required', async () => {
+      // const res = await chai
+      //   .request(api.server)
+      //   .post(route)
+      //   .set('content-type', 'video/mp4')
+      //   .query({ token: mockApiKeys[0].apiKey })
+      //   .send()
+
+      // // console.log(res)
+      // expect(res).to.have.status(411)
+    })
     
     it('HTTP 413 Content Too Large', 
       // check size of files in request against file size limit
