@@ -43,10 +43,26 @@ describe('Uploads', () => {
       expect(res).to.have.status(401)
     })
 
-    it('Returns upload id on upload')
-    it('HTTP 411 Length Required')
-    it('HTTP 413 Content Too Large')
-    it('HTTP 415 Unsupported Media Type')
+    it('Returns upload id on upload',
+      // have mock file upload
+      // check header for file
+      // check for 200 status
+
+    )
+
+    it('HTTP 411 Length Required', 
+      // check for content-length header on request
+      // return
+    )
+    
+    it('HTTP 413 Content Too Large', 
+      // check size of files in request against file size limit
+    )
+
+    it('HTTP 415 Unsupported Media Type', 
+      // check file for correct type, fail on all others
+    )
+
     it('HTTP 500')
   })
 
@@ -92,7 +108,16 @@ describe('Uploads', () => {
       expect(res.body.upload).to.exist
     })
 
-    it('HTTP 404')
+    it('HTTP 404', async () => {
+      const route = '/nerf/uploads/foo'
+      const res = await chai
+        .request(api.server)
+        .get(route)
+        .query({ token: mockApiKeys[0].apiKey })
+      
+      expect(res).to.have.status(404)
+    })
+
     it('HTTP 500')
   })
 
@@ -123,8 +148,22 @@ describe('Uploads', () => {
       })
     })
 
-    it('Callback URL tests')
-    it('HTTP 404')
+    it('Callback URL tests',
+    
+    
+    
+    )
+
+    it('HTTP 404', async () => {
+      const route = '/nerf/uploads/foo'
+      const res = await chai
+        .request(api.server)
+        .get(route)
+        .query({ token: mockApiKeys[0].apiKey })
+      
+      expect(res).to.have.status(404)
+    })
+
     it('HTTP 500')
   })
 })
