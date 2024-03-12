@@ -69,6 +69,7 @@ export default class NerfTrainingsRouter {
       const {
         renderType,
         orbitalRadius,
+        orbitalAngle,
         downscaleFactor,
         label,
         callbackURL
@@ -78,11 +79,14 @@ export default class NerfTrainingsRouter {
         ctx.state.auth!.userId,
         ctx.state.auth!.apiKey,
         ctx.params.trainingId,
-        renderType,
-        orbitalRadius,
-        downscaleFactor,
-        label,
-        callbackURL
+        {
+          renderType,
+          orbitalAngle,
+          orbitalRadius,
+          downscaleFactor,
+          label,
+          callbackURL
+        }
       )
 
       if (renderJob) {
