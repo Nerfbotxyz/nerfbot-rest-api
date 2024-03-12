@@ -106,7 +106,7 @@ export default class JobsAppService {
     apiKey: string,
     trainingId: string,
     opts: CreateRenderJobOpts
-  }) {
+  ) {
     this.logger.info(
       'createRenderJob',
       {
