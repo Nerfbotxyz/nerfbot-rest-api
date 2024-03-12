@@ -9,6 +9,7 @@ export interface NerfExport {
   processedId: string
   trainingId: string
   exportId: string
+  label: string
 }
 
 @injectable()

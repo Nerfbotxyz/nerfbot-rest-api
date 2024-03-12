@@ -8,6 +8,7 @@ export interface Training {
   uploadId: string
   processedId: string
   trainingId: string
+  label: string
 }
 
 @injectable()

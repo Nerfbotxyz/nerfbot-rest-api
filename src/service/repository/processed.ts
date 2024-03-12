@@ -7,6 +7,7 @@ export interface Processed {
   apiKey: string
   uploadId: string
   processedId: string
+  label: string
 }
 
 @injectable()
