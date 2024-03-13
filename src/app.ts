@@ -89,13 +89,9 @@ export default class NerfbotRestApi {
       })
   }
 
-  createTestRedisClient() {
-    return createClient(config.redis)
-  }
-
   private async testRedisAndThrowOnFailedConnection() {
     try {
-      const redisClient = this.createTestRedisClient()
+      const redisClient = createClient(config.redis)
       await redisClient.connect()
       await redisClient.disconnect()
     } catch (error) {
