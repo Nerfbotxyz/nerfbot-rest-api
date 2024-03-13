@@ -2,15 +2,15 @@ import { inject, injectable } from 'inversify'
 
 import { IAppService } from './'
 import { REPOSITORIES, Render, RendersRepository } from '~/service/repository'
-import { S3Adapter } from '~/infra/bucket/adapter'
 import { AppConfig } from '~/inversify.config'
+import CloudBucket from '~/infra/bucket/cloud-bucket'
 
 @injectable()
 export default class RendersAppService implements IAppService {
   constructor(
     @inject(REPOSITORIES.RendersRepository)
     private rendersRepository: RendersRepository,
-    @inject('S3Adapter') private s3: S3Adapter,
+    @inject('CloudBucket') private s3: CloudBucket,
     @inject('AppConfig') private config: AppConfig
   ) {}
 
@@ -27,7 +27,7 @@ export default class RendersAppService implements IAppService {
 
     if (render) {
       return await this.s3.getObjectStream(
-        this.config.s3.renders,
+        this.config.bucket.buckets.renders,
         `${renderId}/render.mp4`
       )
     }

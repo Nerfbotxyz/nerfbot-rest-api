@@ -9,15 +9,15 @@ import {
   NerfExport,
   REPOSITORIES
 } from '~/service/repository'
-import { S3Adapter } from '~/infra/bucket/adapter'
 import { AppConfig } from '~/inversify.config'
+import CloudBucket from '~/infra/bucket/cloud-bucket'
 
 @injectable()
 export default class ExportsAppService implements IAppService {
   constructor(
     @inject(REPOSITORIES.ExportsRepository)
     private exportsRepository: ExportsRepository,
-    @inject('S3Adapter') private s3: S3Adapter,
+    @inject('CloudBucket') private bucket: CloudBucket,
     @inject('AppConfig') private config: AppConfig
   ) {}
 
@@ -32,8 +32,8 @@ export default class ExportsAppService implements IAppService {
   async getDownloadStream(apiKey: string, exportId: string) {
     const theExport = await this.get(apiKey, exportId)
     if (!theExport) { return null }
-    const streamContainers = await this.s3.getObjectStreams(
-      this.config.s3.exports,
+    const streamContainers = await this.bucket.getObjectStreams(
+      this.config.bucket.buckets.exports,
       `${exportId}`
     )
     if (!streamContainers) { return null }
