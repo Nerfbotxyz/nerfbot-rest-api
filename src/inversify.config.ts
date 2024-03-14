@@ -83,7 +83,7 @@ export class AppConfig {
   bucket: BucketConfig = {
     provider: process.env.BUCKET_PROVIDER || 'BUCKET_PROVIDER not set!',
     buckets: {
-      uploads: process.env.BUCKET_NAME || 'BUCKET_NAME not set!',
+      uploads: process.env.UPLOADS_BUCKET || 'UPLOADS_BUCKET not set!',
       renders: process.env.RENDERS_BUCKET || 'RENDERS_BUCKET not set!',
       exports: process.env.EXPORTS_BUCKET || 'EXPORTS_BUCKET not set!'
     }

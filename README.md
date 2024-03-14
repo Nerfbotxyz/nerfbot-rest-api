@@ -29,7 +29,7 @@ or via `.env`
 - `DB_SCHEMA` - defaults to `nerfbot`
 
 ### S3
-- `BUCKET_NAME` - Name of s3 bucket to use for user uploads
+- `UPLOADS_BUCKET` - Name of s3 bucket to use for user uploads
 - `PROCESSED_BUCKET` - Name of s3 bucket to use for processed user uploads
 - `TRAINING_BUCKET` - Name of s3 bucket to use for training artifacts
 - `RENDERS_BUCKET` - Name of s3 bucket to use for render artifacts
