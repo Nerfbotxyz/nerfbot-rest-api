@@ -1,5 +1,5 @@
 export interface IBucketService {
-  bucket: string
+  bucketName: string
 }
 
 export const BUCKETS = {

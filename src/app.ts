@@ -9,11 +9,10 @@ import { IRouter, ROUTERS } from './interface/router'
 import { AuthState } from './interface/middleware'
 import { buildContainer, config } from './inversify.config'
 import { PostgresAdapter } from './infra/db/adapter'
-import { S3Adapter } from './infra/bucket/adapter'
 import Logger from './util/logger'
 import CallbacksQueue from './service/queue/callbacks'
 import { QUEUES } from './service/queue'
-
+import CloudBucket from './infra/bucket/cloud-bucket'
 
 export type State = Koa.DefaultState & {
   auth?: AuthState
@@ -30,7 +29,7 @@ export default class NerfbotRestApi {
   server!: Server
   app: Koa = new Koa()
   private db!: PostgresAdapter
-  private s3!: S3Adapter
+  private bucket!: CloudBucket
   private logger: Logger = new Logger('NerfbotRestApi')
   private callbacksQueue!: CallbacksQueue
 
@@ -42,7 +41,7 @@ export default class NerfbotRestApi {
     const container = buildContainer()
 
     this.db = container.get<PostgresAdapter>('PostgresAdapter')
-    this.s3 = container.get<S3Adapter>('S3Adapter')
+    this.bucket = container.get<CloudBucket>('CloudBucket')
     this.callbacksQueue = container.get<CallbacksQueue>(QUEUES.CallbacksQueue)
 
     const router = new Router()
@@ -90,13 +89,9 @@ export default class NerfbotRestApi {
       })
   }
 
-  createTestRedisClient() {
-    return createClient(config.redis)
-  }
-
   private async testRedisAndThrowOnFailedConnection() {
     try {
-      const redisClient = this.createTestRedisClient()
+      const redisClient = createClient(config.redis)
       await redisClient.connect()
       await redisClient.disconnect()
     } catch (error) {
@@ -118,13 +113,13 @@ export default class NerfbotRestApi {
 
   private async testBucketsAndThrowOnFailedConnection() {
     try {
-      const bucketKeys = Object.keys(config.s3)
+      const bucketKeys = Object.keys(config.bucket.buckets)
 
       await Promise.all(
-        bucketKeys.map(key => this.s3.testConnection(config.s3[key]))
+        bucketKeys.map(key => this.bucket.test(config.bucket.buckets[key]))
       )
     } catch (error) {
-      this.logger.error('S3 connection failed, see error below')
+      this.logger.error('Cloud bucket connection failed, see error below')
 
       throw error
     }

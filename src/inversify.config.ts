@@ -12,7 +12,6 @@ import {
   ROUTERS,
 } from './interface/router'
 import { PostgresAdapter } from './infra/db/adapter'
-import { S3Adapter } from './infra/bucket/adapter'
 import { BullAdapter } from './infra/queue/adapter'
 import {
   ApiKey,
@@ -35,7 +34,7 @@ import {
   User,
   UsersRepository
 } from './service/repository'
-import { CallbackJob, Job, JobType } from './core'
+import { Job, JobType } from './core'
 import {
   APP_SERVICES,
   AuthAppService,
@@ -58,7 +57,12 @@ import NerfProcessedRouter from './interface/router/nerf/processed'
 import NerfRendersRouter from './interface/router/nerf/renders'
 import NerfExportsRouter from './interface/router/nerf/exports'
 import { CallbacksProcessor, JobProcessor, PROCESSORS } from './processors'
-import { ApiKeyMiddleware, MIDDLEWARES, requireApiToken } from './interface/middleware'
+import {
+  ApiKeyMiddleware,
+  MIDDLEWARES,
+  requireApiToken
+} from './interface/middleware'
+import CloudBucket from './infra/bucket/cloud-bucket'
 
 const user = process.env.DB_USER || 'DB_USER not set!'
 const pass = process.env.DB_PASS || 'DB_PASS not set!'
@@ -66,13 +70,23 @@ const host = process.env.DB_HOST || 'DB_HOST not set!'
 const port = process.env.DB_PORT || 'DB_PORT not set!'
 const name = process.env.DB_NAME || 'postgres'
 
+interface BucketConfig {
+  provider: string
+  buckets: {
+    [purpose: string]: string
+  }
+}
+
 export class AppConfig {
   db = { connection: `postgresql://${user}:${pass}@${host}:${port}/${name}` }
   redis = { url: process.env.REDIS || `redis://127.0.0.1:6379` }
-  s3: { [key: string]: string } = {
-    uploads: process.env.BUCKET_NAME || 'BUCKET_NAME not set!',
-    renders: process.env.RENDERS_BUCKET || 'RENDERS_BUCKET not set!',
-    exports: process.env.EXPORTS_BUCKET || 'EXPORTS_BUCKET not set!'
+  bucket: BucketConfig = {
+    provider: process.env.BUCKET_PROVIDER || 'BUCKET_PROVIDER not set!',
+    buckets: {
+      uploads: process.env.BUCKET_NAME || 'BUCKET_NAME not set!',
+      renders: process.env.RENDERS_BUCKET || 'RENDERS_BUCKET not set!',
+      exports: process.env.EXPORTS_BUCKET || 'EXPORTS_BUCKET not set!'
+    }
   }
   version = process.env.npm_package_version
 }
@@ -87,9 +101,11 @@ export const buildContainer = (): Container => {
   container.bind<AppConfig>('AppConfig').toConstantValue(config)
 
   /**
-   * Adapters
+   * Infrastructure Adapters
    */
-  container.bind<S3Adapter>('S3Adapter').toConstantValue(new S3Adapter())
+  container
+    .bind<CloudBucket>('CloudBucket')
+    .toConstantValue(new CloudBucket(config.bucket.provider))
   container
     .bind<PostgresAdapter>('PostgresAdapter')
     .toConstantValue(new PostgresAdapter(config.db.connection))

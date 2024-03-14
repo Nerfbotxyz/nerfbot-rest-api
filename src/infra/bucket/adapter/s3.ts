@@ -1,25 +1,18 @@
 import { Upload } from '@aws-sdk/lib-storage'
 import {
   GetObjectCommand,
-  GetObjectCommandOutput,
   ListObjectsV2Command,
-  PutObjectCommandInput,
   S3Client
 } from '@aws-sdk/client-s3'
-import { SdkStream } from '@aws-sdk/types/dist-types/serde'
-import { injectable } from 'inversify'
-import { Readable } from 'stream'
 
 import Logger from '~/util/logger'
+import {
+  CloudBucketAdapter,
+  CloudBucketPutObjectArgs,
+  ObjectStreamContainer
+} from './adapter'
 
-export type S3StreamContainer = {
-  Key: string,
-  ContentLength?: number
-  Body?: SdkStream<Readable | ReadableStream | Blob | undefined>
-}
-
-@injectable()
-export default class S3Adapter {
+export default class S3Adapter implements CloudBucketAdapter {
   client!: S3Client
   private logger: Logger = new Logger('S3Adapter')
 
@@ -31,7 +24,8 @@ export default class S3Adapter {
     await this.client.send(new ListObjectsV2Command({ Bucket }))
   }
 
-  async upload(params: PutObjectCommandInput) {
+  async putObject(params: CloudBucketPutObjectArgs) {
+    // const params: PutObjectCommandInput = {}
     const upload = new Upload({ client: this.client, params })
 
     // upload.on('httpUploadProgress', progress => {
@@ -44,7 +38,7 @@ export default class S3Adapter {
   async getObjectStream(
     Bucket: string,
     Key: string
-  ): Promise<S3StreamContainer> {
+  ): Promise<ObjectStreamContainer> {
     const {
       Body,
       ContentLength
@@ -58,7 +52,7 @@ export default class S3Adapter {
   async getObjectStreams(
     Bucket: string,
     Prefix: string
-  ): Promise<S3StreamContainer[] | null> {
+  ): Promise<ObjectStreamContainer[]> {
     const { Contents } = await this.client.send(new ListObjectsV2Command({
       Bucket, Prefix
     }))
@@ -69,7 +63,7 @@ export default class S3Adapter {
         .filter<string>((Key): Key is string => !!Key)
         .map(
           Key =>
-            new Promise<S3StreamContainer>(
+            new Promise<ObjectStreamContainer>(
               async resolve => {
                 const { Body, ContentLength } = await this.client.send(
                   new GetObjectCommand({ Bucket, Key })
@@ -79,16 +73,9 @@ export default class S3Adapter {
             )
         )
       
-      // const objects =
       return await Promise.all(getCommands)
-
-      // return objects
-      //   .map(({ Key, obj }) => { return { Key, stream: obj.Body } })
-      //   .filter<S3StreamContainer>(
-      //     (s): s is S3StreamContainer => !!s
-      //   )
     }
 
-    return null
+    return []
   }
 }

@@ -3,11 +3,11 @@ import busboy from 'busboy'
 import { inject, injectable } from 'inversify'
 import mime from 'mime'
 
-import { S3Adapter } from '~/infra/bucket/adapter'
 import { AppConfig } from '~/inversify.config'
 import { IBucketService } from './'
 import Logger from '~/util/logger'
 import { NsProcessMediaType } from '~/core'
+import CloudBucket from '~/infra/bucket/cloud-bucket'
 
 type UploadResult = {
   mediaType: NsProcessMediaType
@@ -17,13 +17,13 @@ type UploadResult = {
 @injectable()
 export default class UploadsBucketService implements IBucketService {
   private logger: Logger = new Logger('UploadsBucketService')
-  bucket: string
+  bucketName: string
 
   constructor(
-    @inject('S3Adapter') private adapter: S3Adapter,
+    @inject('CloudBucket') private bucket: CloudBucket,
     @inject('AppConfig') private config: AppConfig
   ) {
-    this.bucket = this.config.s3.uploads
+    this.bucketName = this.config.bucket.buckets.uploads
   }
 
   async upload(id: string, req: IncomingMessage) {
@@ -41,8 +41,8 @@ export default class UploadsBucketService implements IBucketService {
           const mimeType = mime.getType(filename) || 'application/octet-stream'
           filenamesAndMimetypes.push({ filename, mimeType })
           uploadStreams.push(
-            this.adapter.upload({
-              Bucket: this.bucket,
+            this.bucket.putObject({
+              Bucket: this.bucketName,
               Key: `${id}/${filename}`,
               Body: stream,
               ContentType: mimeType
