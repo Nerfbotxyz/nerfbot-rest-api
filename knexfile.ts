@@ -8,6 +8,8 @@ const port = process.env.DB_PORT || 'DB_PORT not set!'
 const name = process.env.DB_NAME || 'postgres'
 export const SCHEMA_NAME = process.env.DB_SCHEMA || 'nerfbot'
 
+console.log('wtf', `postgresql://${user}:${pass}@${host}:${port}/${name}`)
+
 const config: { [key: string]: Knex.Config } = {
   development: {
     client: 'pg',
